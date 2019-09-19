@@ -52,23 +52,13 @@ python main.py
     
 ### The directory structure before running the scripts should look like -
 ImageAlignment
-
-    -main.py
-
-    -config.py
-    
-    -README.md
-    
-    -test.csv
-    
-    -utils.py
-    
-    -Alignment_testing (Folder where RGB image and hyperspectral excel file is stored.)
-        
-        -RGB_image file
-        
-        -Hyperspectral matrix excel file
-    
-    -output
-        (Script will automatically create subdirectories for each of the example images.)
++-- config.py
++-- Alignment_testing (Folder where RGB image and hyperspectral excel file is stored.)
+|   +-- RGB_image file
+|   +-- Hyperspectral matrix excel file
++-- Output (Script will automatically create subdirectories for each of the example images.)
++-- utils.py
++-- test.csv
++-- README.md
++-- main.py
         
