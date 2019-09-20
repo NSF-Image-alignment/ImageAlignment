@@ -22,9 +22,9 @@ def get_arguments():
     parser.add_argument("--csv-name", type=str, default=CSV_NAME, help="CSV file name.")
     return parser.parse_args()
 
-def align_images(hs_img, rgb_img):
+def align_images(hs_img, rgb_image):
     # create the output directory
-    DIR_NAME = '.'.join(rgb_img.split('/')[-1].split('.')[:-1])
+    DIR_NAME = '.'.join(rgb_image.split('/')[-1].split('.')[:-1])
     directory_path = os.path.join('output', DIR_NAME)
     if not os.path.exists(directory_path):
         os.mkdir(directory_path)
@@ -51,7 +51,7 @@ def align_images(hs_img, rgb_img):
 
     # Read the green channel from the rgb image and preprocess it.
     rgb = RGBPreprocess()
-    rgb_img = cv2.imread()
+    rgb_img = cv2.imread(rgb_image)
     rgb_cropim = rgb.preprocess_rgb(rgb_img)
     cv2.imwrite(directory_path+"/rgb_cropped.png", rgb_cropim)
 
