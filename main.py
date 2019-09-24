@@ -75,7 +75,7 @@ def main():
                 print("RGB image: ", rgb_img)
                 hs_img = hs_img.replace("'", '')
                 rgb_img = rgb_img.replace("'", '')
-                align_images(hs_img, rgb_img)
+                align_images(hs_img, rgb_img.rstrip())
     else:
         print("No")
         hs_img = args.hyper_img
