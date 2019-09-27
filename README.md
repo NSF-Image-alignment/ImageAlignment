@@ -22,7 +22,7 @@ Example:
 python main.py --rgb-img './Alignment_testing/GWO1_I2.0_F1.9_L80_103450_0_0_0_rgb.jpg' --hyper-img './Alignment_testing/GWO1_I2.0_F1.9_L80_103450_0_0_0.xlsx' --grid_type 1
 ```
 Here grid type is the type of grid in the RGB image. If the explants are placed in a 3X3 grid, choose 1.
-If the grid is similar to the example image [https://github.com/NSF-Image-alignment/ImageAlignment/tree/master/Alignment_testing/CV2_F1.9_I5.0_L100_cyan_234342_19_2_5_rgb.jpg](Alignment_testing/CV2_F1.9_I5.0_L100_cyan_234342_19_2_5_rgb.jpg), choose 2. 
+If the grid is similar to the example image [here](Alignment_testing/CV2_F1.9_I5.0_L100_cyan_234342_19_2_5_rgb.jpg), choose 2. 
 
 You can optionally modify these parameters in the script. Modify the HYPERSPECTRAL_IMG and RGB_IMG parameter at the top of the main.py.
 
@@ -52,7 +52,7 @@ python main.py
     python main.py --csv
     ```
 Here grid type is the type of grid in the RGB image. If the explants are placed in a 3X3 grid, choose 1.
-If the grid is similar to the example image [Alignment_testing/CV2_F1.9_I5.0_L100_cyan_234342_19_2_5_rgb.jpg](Alignment_testing/CV2_F1.9_I5.0_L100_cyan_234342_19_2_5_rgb.jpg), choose 2. 
+If the grid is similar to the example image [here](Alignment_testing/CV2_F1.9_I5.0_L100_cyan_234342_19_2_5_rgb.jpg), choose 2. 
 
 
 Please note to align the label output with Hyperspectral matrix, we must change the orientation of the label output image in the same way as the input RGB image. Example in the folder [here](Alignment_testing/CV2_F1.9_I5.0_L100_cyan_234342_19_2_5_rgb.png).
