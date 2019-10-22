@@ -7,10 +7,11 @@ from utils import HyperspecPreprocess, RGBPreprocess, ImageAlignment
 import pickle
 import os
 
-HYPERSPECTRAL_IMG = './Alignment_testing/CV2_F1.9_I5.0_L100_cyan_234342_19_2_5-CLS1.out.xlsx'
-RGB_IMG = './Alignment_testing/CV2_F1.9_I5.0_L100_cyan_234342_19_2_5_rgb.png'
+
+HYPERSPECTRAL_IMG = './Alignment_testing/GWO1_I2.0_F1.9_L80_103450_0_0_0.xlsx'
+RGB_IMG = './Alignment_testing/GWO1_I2.0_F1.9_L80_103450_0_0_0_rgb.jpg'
 CSV_NAME = './test.csv'
-GRID_TYPE = 2 
+GRID_TYPE = 1
 
 def get_arguments():
     """
@@ -45,11 +46,13 @@ def align_images(hs_img, rgb_image, grid_type):
             hyperspectral_data = np.concatenate((hyperspectral_data, im[..., np.newaxis]), axis = 2)
         except:
             hyperspectral_data = im[..., np.newaxis]
-
-    print(hyperspectral_data.shape)
     
     assert(sheet_cnt == hyperspectral_data.shape[2]) #check if all the hyperspectral image matrix have been read.
     print("Read all the channels of hyperspectral image.")
+        
+    # ch1 = cv2.imread("./output/GWO1_I2.0_F1.9_L80_103450_0_0_0_rgb/cropped_hyperspec_img_3.png", cv2.IMREAD_GRAYSCALE)
+    # ch2 = cv2.imread("./output/GWO1_I2.0_F1.9_L80_103450_0_0_0_rgb/cropped_hyperspec_img_4.png", cv2.IMREAD_GRAYSCALE)
+    # hyperspectral_data = np.concatenate((ch1[...,np.newaxis], ch2[...,np.newaxis]), axis = 2)
 
     # Read the green channel from the rgb image and preprocess it.
     rgb = RGBPreprocess(grid_type)
@@ -59,8 +62,8 @@ def align_images(hs_img, rgb_image, grid_type):
 
     # find matches using SIFT and warp the chlorophyll channel to align with the green channel of the rgb image.  
     align = ImageAlignment(grid_type)    
-    aligned_im = align.warp_image(hyperspectral_data, rgb_cropim, sheet_cnt, directory_path)
-
+    aligned_im = align.warp_image(hyperspectral_data, rgb_cropim, 2, directory_path)
+   
     with open(directory_path+"/arr_dump.pickle", "wb") as f:
         pickle.dump(aligned_im, f)
 

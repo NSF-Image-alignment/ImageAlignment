@@ -58,32 +58,34 @@ def sheet_to_array(filename, sheet_number):
     return data
 
 class HyperspecPreprocess:
-    def __init__(self, grid_type):
+    def __init__(self, grid_type):    
         if grid_type == 1:
             (self.min_x, self.max_x, self.min_y, self.max_y) = cfg.hyperspec_cropdims_1
         else:
             (self.min_x, self.max_x, self.min_y, self.max_y) = cfg.hyperspec_cropdims_2
-        print("Hyperspectral image matrix crop dimensions: ", self.min_x, self.max_x, self.min_y, self.max_y)
+        # print("Hyperspectral image matrix crop dimensions: ", self.min_x, self.max_x, self.min_y, self.max_y)
 
     def preprocess_hyperspec_ch(self, data):
         """
             Preprocess the hyperspectral image matrix to align it according to the rgb image.
         """
         data = (data - np.min(data))*255/(np.max(data)-np.min(data))
-        data = data.astype('uint8')
-        cropped_im = data[self.min_x-5:self.max_x+5, self.min_y-5:self.max_y+5]
-        transpose_im = cv2.transpose(cropped_im)
+        data = data.astype('uint8')                
+        transpose_im = cv2.transpose(data)
         flip_im = cv2.flip(cv2.flip(transpose_im, 0), 1)
-        return flip_im
+        cropped_im = flip_im[self.min_x:self.max_x, self.min_y:]      
+        cropped_im = np.pad(cropped_im, ((0, 0), (0, 80)), 'minimum')        
+        return cropped_im
 
 class RGBPreprocess:
     def __init__(self, grid_type):
-        if grid_type == 1:
-            (self.th, self.tw, self.bh, self.bw) = cfg.rgb_cropdims_1
-        else:
-            (self.th, self.tw, self.bh, self.bw) = cfg.rgb_cropdims_2
+        pass
+        # if grid_type == 1:
+        #     (self.th, self.tw, self.bh, self.bw) = cfg.rgb_cropdims_1
+        # else:
+        #     (self.th, self.tw, self.bh, self.bw) = cfg.rgb_cropdims_2
         self.h, self.w = 600, 600
-        print("RGB crop dimensions: ", self.th, self.tw, self.bh, self.bw)
+        # print("RGB crop dimensions: ", self.th, self.tw, self.bh, self.bw)
 
     def preprocess_greench_image(self, greench_img):
         """
@@ -106,7 +108,7 @@ class RGBPreprocess:
     
     def preprocess_rgb(self, image):
         image = cv2.resize(image, (self.h, self.w))
-        image = image[self.tw:self.bw, self.th:self.bh, :]
+        # image = image[self.tw:self.bw, self.th:self.bh, :]
         return image
 
 class ImageAlignment:
@@ -152,9 +154,9 @@ class ImageAlignment:
                 warpHyperImage = warpImage[..., np.newaxis]
 
         # for the purpose of visualization if the obtained warped image aligns properly.
-        new_img = np.hstack((warpHyperImage[:,:,3], rgb_image[:,:,1]))
+        new_img = np.hstack((warpHyperImage[:,:,1], rgb_image[:,:,1]))
         cv2.imwrite(directory_path+"/hstack.png", new_img)
-        new_img = np.vstack((warpHyperImage[:,:,3], rgb_image[:,:,1]))
+        new_img = np.vstack((warpHyperImage[:,:,1], rgb_image[:,:,1]))
         cv2.imwrite(directory_path+"/vstack.png", new_img)
         
 

@@ -4,11 +4,15 @@ import numpy as np
 config = edict()
 
 # crop dimensions for hyperspectral image
-config.hyperspec_cropdims_1 = (251, 1830, 330, 1157)
+# config.hyperspec_cropdims_1 = (251, 1830, 330, 1157)
+# config.hyperspec_cropdims_2 = (108, 1348, 240, 1218)
+config.hyperspec_cropdims_1 = (30, 1380, 80, 2270)
 config.hyperspec_cropdims_2 = (108, 1348, 240, 1218)
 
 # crop dimensions for rgb image
-config.rgb_cropdims_1 = (94, 77, 507, 450)
+# config.rgb_cropdims_1 = (94, 77, 507, 450)
+# config.rgb_cropdims_2 = (48, 136, 510, 438)
+# config.rgb_cropdims_1 = (4, 7, 597, 520)
 config.rgb_cropdims_2 = (48, 136, 510, 438)
 
 # homography matrix for warping the image 
