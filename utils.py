@@ -57,7 +57,7 @@ def sheet_to_array(filename):
     return datas, sheet_cnt
 
 #function to read data from .xslx hyperspectral files
-def read_hyper_data(hs_img):
+def read_hyper_data(hs_img, directory_path):
     #initialize a HyperspecPreprocess varibale using the grid_type
     hyp_prep = HyperspecPreprocess()
     print("-------Begining to read hyperspectral data----------- ")
@@ -66,6 +66,7 @@ def read_hyper_data(hs_img):
     end_time = time.time()
     print("total time taken during reading count_worksheets " + str(end_time - start_time))
     imgs = []
+    entropies = []
     #iterates through the number of channels
     for i in range(len(datas)):
         #reads data value from the sheet of hs_img
