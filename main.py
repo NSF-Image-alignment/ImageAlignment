@@ -10,17 +10,17 @@ import pandas as pd
 import os
 import cv2
 import numpy as np
-import config as cfg
+from config import config as cfg
 
 if __name__ == "__main__":
     #mode =1: calculate homography matrix
     #mode =2: apply homography matrix on rgb images from csv
-    mode = 1
+    mode = 2
 
-    #grid_type = 1: 16 samples 
+    #grid_type = 1: 16 samples
     #grid_type = 2: 20 samples
     #provide a grid_type number other than 1 and 2 if apply new homography matrix
-    grid_type = 1
+    grid_type = 2
 
     if mode == 2:
         #provide the hyper_img of the associated grid_type
@@ -37,6 +37,8 @@ if __name__ == "__main__":
             h_matrix = cfg.h_matrix_1
         elif grid_type == 2:
             h_matrix = cfg.h_matrix_2
+            print("works")
+            exit(0)
         else:
             #provide the homography matrix to be applied
             h_matrix = np.array(

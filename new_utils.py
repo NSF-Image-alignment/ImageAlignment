@@ -13,7 +13,7 @@ import os
 from xlrd import open_workbook, XL_CELL_NUMBER
 import numpy as np
 import cv2
-import config as cfg
+from config import config as cfg
 import time
 from skimage import measure
 
@@ -273,4 +273,5 @@ def align_image(hyp_img, rgb_img):
     return align_img, unalign_img, warped_rgb, h_transformation
 
 if __name__ == '__main__':
+    print(cfg.h_matrix_2)
     pass
