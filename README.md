@@ -10,53 +10,31 @@ conda env create -f align.yaml
 ```bash
 mkdir output
 ```
-(this commands works for the unix and MAC OS system)
 
 
 ### To run the scripts for a single RGB image and hyperspectral matrix pair, use the command:
 ```bash
-python main.py --rgb-img rgb_image_name_with_path --hyper-img hyperspectral_image_name_with_path --grid-type grid_type_number
+python main.py 
 ```
-Example:
-```bash
-python main.py --rgb-img './Alignment_testing/GWO1_I2.0_F1.9_L80_103450_0_0_0_rgb.jpg' --hyper-img './Alignment_testing/GWO1_I2.0_F1.9_L80_103450_0_0_0.xlsx' --grid_type 1
-```
-Here grid type is the type of grid in the RGB image. If the explants are placed in a 3X3 grid, choose 1.
-If the grid is similar to the example image [here](Alignment_testing/CV2_F1.9_I5.0_L100_cyan_234342_19_2_5_rgb.jpg), choose 2. 
+With mode = 1
 
-You can optionally modify these parameters in the script. Modify the HYPERSPECTRAL_IMG and RGB_IMG parameter at the top of the main.py.
-
-Run the script as -
-```bash
-python main.py
-```
 
 ### To run for a set of images.
-1. Modify the test.csv file 
+1. Modify the .csv file 
 
     Format:
+    rgb_images:
+    rgb_img_path
     
-    hyperspectral_img_with_path, rgb_img_with_path, grid_type
-    
-    (Example file is present in the folder)
+    (Example file is present in the test_pipeline folder)
 
 2. Run the script with the command - 
-    ```bash
-    python main.py --csv --csv-name test.csv
-    ```
+```bash
+python main.py 
+```
+With mode = 2
     
-    You can optionally mention the csv name in the main.py script. Modify the parameter CSV_NAME at the top of the script.
-
-    Run the script as -
-    ```bash
-    python main.py --csv
-    ```
-Here grid type is the type of grid in the RGB image. If the explants are placed in a 3X3 grid, choose 1.
-If the grid is similar to the example image [here](Alignment_testing/CV2_F1.9_I5.0_L100_cyan_234342_19_2_5_rgb.jpg), choose 2. 
-
-
-Please note to align the label output with Hyperspectral matrix, we must change the orientation of the label output image in the same way as the input RGB image. Example in the folder [here](Alignment_testing/CV2_F1.9_I5.0_L100_cyan_234342_19_2_5_rgb.png).
-
+  
 ### The directory structure before running the scripts should look like -
 ImageAlignment
 

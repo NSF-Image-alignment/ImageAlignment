@@ -1,20 +1,33 @@
+#!usr/bin/python
+###############################################################################
+__authors__ = "Jia Yi Li, Damanpreet Kaur"
+__description__ = "configurations for the homography matrices for Image Alignment"
+__date__ = "11/12/2019"
+__version__ = 1.0
+###############################################################################
+
 from easydict import EasyDict as edict
 import numpy as np
-
 config = edict()
 
-# crop dimensions for hyperspectral image
-# config.hyperspec_cropdims_1 = (251, 1830, 330, 1157)
-# config.hyperspec_cropdims_2 = (108, 1348, 240, 1218)
-config.hyperspec_cropdims_1 = (30, 1380, 80, 2270)
-config.hyperspec_cropdims_2 = (108, 1348, 240, 1218)
+#grid_type =1: 16 samples
+#grid_type =2: 20 samples
 
-# crop dimensions for rgb image
-# config.rgb_cropdims_1 = (94, 77, 507, 450)
-# config.rgb_cropdims_2 = (48, 136, 510, 438)
-# config.rgb_cropdims_1 = (4, 7, 597, 520)
-config.rgb_cropdims_2 = (48, 136, 510, 438)
+h_ma1 = (
+[[ 1.20929054e+00,  9.35797442e-03, -1.49528686e+02],
+[-1.63188868e-02,  1.03924034e+00, -1.54596767e+02],
+[-2.07130119e-05,  7.15784176e-06,  1.00000000e+00]]
+)
 
-# homography matrix for warping the image 
-config.h_matrix_1 = np.array([[ .986259758,.0329835641, -1.69711514], [ .00100061611, .798943245, 1.79183846e+02], [ 3.74790798e-06, 3.13911362e-05, 1.00000000]])
-config.h_matrix_2 = np.array([[ 1.03121360e+00, 5.80620575e-02, 1.01817998e+01], [1.32913410e-04, 1.18934057e+00, -5.75134351e+01], [8.74434726e-06, 4.77127812e-05, 1.00000000e+00]])
+#homography matrix for warping the image with grid_type 1
+config.h_matrix_1 = np.array(h_ma1)
+
+
+h_ma2 = (
+[[ 1.20262572e+00, -4.79663041e-03, -1.43459905e+02],
+[-4.59787369e-03,  1.01879219e+00, -9.79267852e+01],
+[ 2.44805399e-06, -1.11496491e-05,  1.00000000e+00]]
+)
+
+#homography matrix for warping the image with grid_type 2
+config.h_matrix_2 = np.array(h_ma2)
