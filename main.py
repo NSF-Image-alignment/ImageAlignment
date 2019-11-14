@@ -14,11 +14,12 @@ import config as cfg
 
 if __name__ == "__main__":
     #mode =1: calculate homography matrix
-    #mode =2: apply homography matrix on rgg images from csv
+    #mode =2: apply homography matrix on rgb images from csv
     mode = 1
 
-    #grid_type =1: 16 samples
-    #grid_type =2: 20 samples
+    #grid_type = 1: 16 samples 
+    #grid_type = 2: 20 samples
+    #provide a grid_type number other than 1 and 2 if apply new homography matrix
     grid_type = 1
 
     if mode == 2:
@@ -37,6 +38,7 @@ if __name__ == "__main__":
         elif grid_type == 2:
             h_matrix = cfg.h_matrix_2
         else:
+            #provide the homography matrix to be applied
             h_matrix = np.array(
             [[ 1.20929054e+00,  9.35797442e-03, -1.49528686e+02],
             [-1.63188868e-02,  1.03924034e+00, -1.54596767e+02],
@@ -86,6 +88,7 @@ if __name__ == "__main__":
             hyp_img = cv2.imread(hyper_img_path)
 
         #align the images and get the results
+        #open new_utils to tune the tunable parameters for better homography matrix
         align_img, unalign_img, warped_rgb, homography = new_utils.align_image(hyp_img, rgb_img)
 
 # Show the images:
