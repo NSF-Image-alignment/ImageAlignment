@@ -10,7 +10,7 @@ import pandas as pd
 import os
 import cv2
 import numpy as np
-import config as cfg
+from config import config as cfg
 
 if __name__ == "__main__":
     #mode =1: calculate homography matrix
@@ -24,10 +24,10 @@ if __name__ == "__main__":
 
     if mode == 2:
         #provide the hyper_img of the associated grid_type
-        hyper_img_path = r".\output\GWO1_I2.0_F1.9_L80_103450_0_0_0_rgb\full_hyperspec_img.png"
+        hyper_img_path = r"./output/TPB3_I5.0_F1.9_L100_171409_3_0_4_rgb/full_hyperspec_img.png"
         hyp_img = cv2.imread(hyper_img_path)
 
-        csv_path = r"./test_pipeline/test.csv"
+        csv_path = r"./In_vitro_test/list_images.csv"
         #read the paths from csv
         data = pd.read_csv(csv_path)
         rgb_images = data['rgb_images']
