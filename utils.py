@@ -1,24 +1,26 @@
-"""
-    Utility functions for image matching task.
-"""
+#!usr/bin/python
+###############################################################################
+__authors__ = "Jia Yi Li, Damanpreet Kaur"
+__description__ = "Utility functions for Image Alignment"
+
+__date__ = "06/01/2020"
+__maintainer__ = "Damanpreet Kaur"
+__version__ = 1.2 
+
+'''
+Using SIFT algorithm for feature matching
+'''
+###############################################################################
 import os
-from xlrd import open_workbook  
-from xlrd import XL_CELL_TEXT, XL_CELL_NUMBER, XL_CELL_DATE, XL_CELL_BOOLEAN
+from xlrd import open_workbook, XL_CELL_NUMBER
 import numpy as np
-import matplotlib.pyplot as plt
 import cv2
 from config import config as cfg
-
-def count_worksheets(filename):
-    # sheet
-    try:
-        book = open_workbook(filename, on_demand=True)
-    except:
-        print("Check if the file is present. If it present remove the quotes around the file name and try again.")
-        exit()
-
-    sheet_cnt = book.nsheets
-    return sheet_cnt
+import time
+from skimage import measure
+from PIL import Image
+from numpy import genfromtxt
+import matplotlib.pyplot as plt
 
 def sheet_to_array(filename, sheet_number):
     """
@@ -33,134 +35,258 @@ def sheet_to_array(filename, sheet_number):
     3. All rows are loaded.
     """
     
-    # sheet
     try:
         book = open_workbook(filename, on_demand=True)
     except:
         print("Check if the file is present. If it present remove the quotes around the file name and try again.")
         exit()
 
-    sheet = book.sheet_by_index(sheet_number)
-    rows = sheet.nrows
+    sheet_cnt = book.nsheets
+    #if a sheet_number is provided, only read that sheet number
+    if sheet_number !=  None:
+        hyp_data = []
+        # for sheet_number in range(sheet_cnt):
+        sheet = book.sheet_by_index(sheet_number)
+        # print("original width",sheet.nrows )
+        # print("original height",sheet.ncols )
+        # rows = sheet.nrows
+        rows = 1400
 
-    # cols
-    last_col = sheet.ncols
-    data = np.empty([last_col, rows], dtype=int)
+        last_col = sheet.ncols
+        data = np.empty([last_col, rows], dtype=int)
+        cols = [col for col in range(0, last_col + 1)]
 
-    cols = [col for col in range(0, last_col + 1)]
+        for row in range(0, rows):
+            row_values = sheet.row(row)
+            for col, cell in enumerate(row_values):
+                if col in cols and cell.ctype == XL_CELL_NUMBER:
+                    data[col, row] = cell.value
 
-    for row in range(0, sheet.nrows):
-        row_values = sheet.row(row)
-        for col, cell in enumerate(row_values):            
-            if col in cols and cell.ctype == XL_CELL_NUMBER:
-                data[col, row] = cell.value              
+            hyp_data = data
+        return hyp_data, sheet_cnt
 
-    return data
+    else:
+        datas = []
+        for sheet_number in range(sheet_cnt):
+            sheet = book.sheet_by_index(1)
+            # rows = sheet.nrows
+            rows = 1400
 
-class HyperspecPreprocess:
-    def __init__(self, grid_type):    
-        if grid_type == 1:
-            (self.min_x, self.max_x, self.min_y, self.max_y) = cfg.hyperspec_cropdims_1
-        else:
-            (self.min_x, self.max_x, self.min_y, self.max_y) = cfg.hyperspec_cropdims_2
-        # print("Hyperspectral image matrix crop dimensions: ", self.min_x, self.max_x, self.min_y, self.max_y)
+            last_col = sheet.ncols
+            data = np.empty([last_col, rows], dtype=int)
 
-    def preprocess_hyperspec_ch(self, data):
-        """
-            Preprocess the hyperspectral image matrix to align it according to the rgb image.
-        """
-        data = (data - np.min(data))*255/(np.max(data)-np.min(data))
-        data = data.astype('uint8')                
-        transpose_im = cv2.transpose(data)
-        flip_im = cv2.flip(cv2.flip(transpose_im, 0), 1)
-        cropped_im = flip_im[self.min_x:self.max_x, self.min_y:]      
-        cropped_im = np.pad(cropped_im, ((0, 0), (0, 80)), 'minimum')        
-        return cropped_im
+            cols = [col for col in range(0, last_col + 1)]
 
-class RGBPreprocess:
-    def __init__(self, grid_type):
-        pass
-        # if grid_type == 1:
-        #     (self.th, self.tw, self.bh, self.bw) = cfg.rgb_cropdims_1
-        # else:
-        #     (self.th, self.tw, self.bh, self.bw) = cfg.rgb_cropdims_2
-        self.h, self.w = 600, 600
-        # print("RGB crop dimensions: ", self.th, self.tw, self.bh, self.bw)
+            for row in range(0, sheet.nrows):
+                row_values = sheet.row(row)
+                for col, cell in enumerate(row_values):
+                    if col in cols and cell.ctype == XL_CELL_NUMBER:
+                        data[col, row] = cell.value
 
-    def preprocess_greench_image(self, greench_img):
-        """
-            Preprocess the green channel of the rgb image to get the plants information.
-            1. Crop the petri dish from the image.
-            2. Median blur the image to remove the small noises in the image.
-            3. Find contours to detect the plants in the petri dish.
-            4. Crop the plants from the image.
-        """
-        # Resize image to detect the contours easily.
-        greench_img = cv2.resize(greench_img, (self.h, self.w))
-        circles = cv2.HoughCircles(greench_img, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=30, minRadius=240, maxRadius=250)
-        index = np.argmin(circles[circles[:,:,0] > 300][:,0])
-        circle = circles[:,index,:]
+                datas.append(data)
 
-        green = greench_img.copy()
+        return datas, sheet_cnt
+        
 
-        img = greench_img[self.tw:self.bw, self.th:self.bh]
-        return img
+#function to read data from .xslx hyperspectral files
+def read_hyper_data(hs_img, directory_path, sheet_number, choose_best = False):
+    print("-------Begining to read hyperspectral data----------- ")
+
+    #if a sheet_number is provided, only read that sheet number
+    if sheet_number !=  None:
+        start_time = time.time()
+        data, sheet_cnt = sheet_to_array(hs_img, sheet_number)
+        end_time = time.time()
+        print("Total time taken during reading count_worksheets: " + str(end_time - start_time))
+        #preprocess the hs_img using data read from sheet
+        hyp_im = preprocess_hyperdata(data)
+
+        print("________Read sheet " + str(sheet_number)+ " of hyperspectral image.__________")
+        cv2.imwrite(directory_path+"/full_hyperspec_img.png", hyp_im)
+        return hyp_im
+
+    #if NO sheet_number is provided, read the entire workbook
+    else:
+        start_time = time.time()
+        datas, sheet_cnt = sheet_to_array(hs_img, sheet_number)
+        end_time = time.time()
+        print("Total time taken during reading count_worksheets: " + str(end_time - start_time))
+        imgs = []
+        entropies =[]
+        #iterates through the number of channels
+        for i in range(len(datas)):
+        #reads data value from the sheet of hs_img
+            data = datas[i]
+            #preprocess the hs_img using data read from sheet
+            hyp_im = preprocess_hyperdata(data)
+            #output preprocessed hyp_im to path
+            cv2.imwrite(directory_path+"/full_hyperspec_img_"+str(i)+".png", hyp_im)
+            #the following steps are for calculating the best hyper_img
+            imgs.append(hyp_im)
+            #calculate the entropy of image
+            entropy = measure.shannon_entropy(hyp_im)
+            # print("entropy"+str(i), entropy)
+            entropies.append(entropy)
+
+        if choose_best == True:
+            #output best preprocessed hs_img to path
+            best_hyper_index = np.argmax(entropies)
+            best_hyper_img = imgs[best_hyper_index]
+            cv2.imwrite(directory_path+"/full_hyperspec_img.png", best_hyper_img)
+            return best_hyper_img, best_hyper_img.shape
+
+        #check if all the hyperspectral image matrix have been read.
+        try:
+            hyperspectral_data = np.concatenate((hyperspectral_data, im[..., np.newaxis]), axis = 2)
+        except:
+            hyperspectral_data = im[..., np.newaxis]
+
+        assert(sheet_cnt == hyperspectral_data.shape[2])
+        print("________Read all the channels of hyperspectral image.__________")
+
+        return imgs
+
+#class for hyperspectral images preprocessing
+# class HyperspecPreprocess:
+def preprocess_hyperdata(data):
+    """
+        Preprocess the hyperspectral image matrix to align it according to the rgb image.
+    """
+    data = (data - np.min(data))*255/(np.max(data)-np.min(data))
+    data = data.astype('uint8')
+    resize_hs_img = cv2.resize(data, (1400, data.shape[0]))
+    return resize_hs_img
+
+
+#resize and rotate rgb image
+def preprocess_rgb(rgb_img, h, w, ext):
+    #flip verticall
+    final_flipped = cv2.flip(rgb_img, 1)
+    #rotate counterclockwise = transpose + flip horizontally
+    hor_flipped = cv2.flip(final_flipped, 0)
+    transpose_im = cv2.transpose(hor_flipped)
+    #resize rgb
+    # transpose_im = transpose_im.astype(np.int32)
     
-    def preprocess_rgb(self, image):
-        image = cv2.resize(image, (self.h, self.w))
-        # image = image[self.tw:self.bw, self.th:self.bh, :]
-        return image
+    ratio = w/h
+    # print(ratio)
+    # height = rgb_img.shape[0]
+    # width =  rgb_img.shape[1]
+    if ext == 'jpg':
+        rgb_img_resize = cv2.resize(transpose_im, (w, h))
+    else:
+        rgb_img_resize = Image.fromarray(transpose_im).resize((w, h), Image.NEAREST)
+    return rgb_img_resize
 
+
+#Initiates class for image alignment utilizing the configuration file
 class ImageAlignment:
     def __init__(self, grid_type):
         if grid_type == 1:
             self.h_matrix = cfg.h_matrix_1
+        elif  grid_type == 2:
+            self.h_matrix = cfg.h_matrix_2
         else:
-            self.h_matrix = cfg.h_matrix_2    
-        print("Homography matrix: ", self.h_matrix)
+            pass
 
-    # def image_align_sift(self, img1, img2):
-    #     """
-    #         Warp the chlorophyll channel image to align with the green channel of the rgb image.
-    #         img1 - chlorophyll channel of the image.
-    #         img2 - green channel of the rgb image.
-    #     """
-        
-    #     # resize the images
-    #     h, w = int(img1.shape[1]*1.2), int(img1.shape[0]*1.2)
-    #     img2 = cv2.resize(img2, (h, w))
-    #     img1 = cv2.resize(img1, (h, w))
+    def warp_image(self, hyp_img, rgb_img, directory_path):
+        # transform the images and overlay them to see if they align properly
+        height, width = rgb_img.shape[:2]
+        warped_rgb = cv2.warpPerspective(rgb_img, self.h_matrix, (width, height))
 
-    #     print("Shape of image1: ", img1.shape)
-    #     print("Shape of image2: ", img2.shape)
-    #     print("Homography matrix: ", self.h_matrix)
+        align_img = cv2.addWeighted(warped_rgb, .3, hyp_img, .7, 1)
 
-    #     warpImage = cv2.warpPerspective(img1, self.h_matrix, (img2.shape[1], img2.shape[0]))       
+        unalign_img = cv2.addWeighted(rgb_img, .3, hyp_img, .7, 1)
 
-    def warp_image(self, hyperspectral_data, rgb_image, sheet_cnt, directory_path):
-        # apply the homography to the image to obtain the warped image.
-        # Please note - we are warping the chlorophyll channel according to the green channel image.
-        h, w = int(hyperspectral_data.shape[1]*1.2), int(hyperspectral_data.shape[0]*1.2)
-        rgb_image = cv2.resize(rgb_image, (h, w))
-        hyperspectral_data = cv2.resize(hyperspectral_data, (h, w))
+        return align_img, unalign_img, warped_rgb, self.h_matrix
 
-        for i in range(sheet_cnt):
-            img1 = hyperspectral_data[:,:,i]
-            warpImage = cv2.warpPerspective(img1, self.h_matrix, (rgb_image.shape[1], rgb_image.shape[0]))
-            
-            try:                
-                warpHyperImage = np.concatenate((warpHyperImage, warpImage[..., np.newaxis]), axis=2)
-            except:
-                warpHyperImage = warpImage[..., np.newaxis]
 
-        # for the purpose of visualization if the obtained warped image aligns properly.
-        new_img = np.hstack((warpHyperImage[:,:,1], rgb_image[:,:,1]))
-        cv2.imwrite(directory_path+"/hstack.png", new_img)
-        new_img = np.vstack((warpHyperImage[:,:,1], rgb_image[:,:,1]))
-        cv2.imwrite(directory_path+"/vstack.png", new_img)
-        
+#This function reads the hyperspectral excel workbook
+#and get the correct orientation of the hyper image
+#and preprocess hyper and rgb image for alignment
+def preprocess_hyper_and_rgb(hs_img, rgb_image, directory_path, sheet_number):
+    #read hyperspectral data from a csv file
+    if hs_img.split('.')[-1]=='csv':
+        hyper_img = genfromtxt(hs_img, delimiter=',')
+        hyper_img = np.uint8(hyper_img)
+    else:   #read hyperspectral data from excel workbook
+        hyper_img = read_hyper_data(hs_img, directory_path,\
+                                sheet_number, choose_best = False)
 
-        # stack the aligned images together
-        stackImg = np.concatenate((warpHyperImage, rgb_image), axis=2)
-        return stackImg
+    #call functions to preprocess rgb image
+    rgb_img = cv2.imread(rgb_image)
+    h, w = hyper_img
+    rgb_prep = preprocess_rgb(rgb_img, h, w , 'jpg') # ext - jpg since alignment will not computed with the segmented image.
+    cv2.imwrite(directory_path+"/rgb_prep.png", rgb_prep)
+    print("------------Preprocess is saved and finished.-------------------")
+
+    return rgb_prep, hyper_img
+
+
+#This function calculates the homography matrix for the images:
+def align_image(hyp_img, rgb_img, ch=-1):
+    if ch==-1:
+        # preprocess rgb to hsv
+        rgb_hsv = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2HSV)
+        # Convert images to grayscale
+        rgb_gray = cv2.cvtColor(rgb_hsv, cv2.COLOR_BGR2GRAY)
+    else:
+        rgb_gray = rgb_img[:,:,ch] # selecting the passed channel from the rgb image
+
+    # read hyperspectral image
+    hyp_gray = hyp_img
+    if len(hyp_img.shape)==3:
+        hyp_gray = cv2.cvtColor(hyp_img, cv2.COLOR_BGR2GRAY)
+
+    '''
+        Fine-tune params according to the image.
+        n_features - Number of best features to retain. Will be 0.
+        nOctaveLayers - Depends on the image size. 
+                        How many octaves of the original image should be formed.
+        Sigma - Gaussian kernel size. Modify according to the image resolution.
+        edgeThreshold - Larger the edge threshold, more features are retained. 
+                Depends on how strong the corners and edges are.
+    '''
+    sift = cv2.xfeatures2d.SIFT_create(nfeatures=0, nOctaveLayers=5, edgeThreshold=10, sigma=1.6) 
     
+    # finding the keypoint descriptors
+    kpts1, descs1 = sift.detectAndCompute(hyp_gray, None)
+    kpts2, descs2 = sift.detectAndCompute(rgb_gray, None)
+    
+    # find matches
+    matcher = cv2.FlannBasedMatcher(dict(algorithm = 1, trees = 15), {}) 
+    matches = matcher.knnMatch(descs1, descs2, 2) # find top2 matches for every descriptor
+    matches = sorted(matches, key = lambda x:x[0].distance) # sort the matches
+
+    # retain the best matches
+    good = [m1 for (m1, m2) in matches if m1.distance < 0.6 * m2.distance]
+    if len(good)<4:
+        print("No of matches are less than 4. Cannot run RANSAC")
+        exit()
+
+    # transform the source points to match the destination points.
+    dst_pts = np.float32([ kpts1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
+    src_pts = np.float32([ kpts2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
+
+    # find homography matrix
+    h_transformation, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, ransacReprojThreshold=10)
+    mask = mask.ravel().tolist()
+    
+    # uncomment the below section to test the keypoints. 
+    good = [g for i,g in enumerate(good) if mask[i]==1]
+    img = cv2.drawMatches(hyp_gray,kpts1,rgb_gray,kpts2,good,None)
+    plt.imshow(img); plt.show()
+
+    # apply the homography matrix 
+    height, width = rgb_img.shape[:2]
+    warpImage = cv2.warpPerspective(rgb_gray, h_transformation, (width, height))
+    plt.imshow(warpImage); plt.show()
+
+    align_img = cv2.addWeighted(warpImage, .3, hyp_img, .7, 1)
+    unalign_img = cv2.addWeighted(rgb_gray, .3, hyp_img, .7, 1)
+
+    return align_img, unalign_img, warpImage, h_transformation
+
+if __name__ == '__main__':
+    my_data = genfromtxt('hs.csv', delimiter=',')
+    cv2.imwrite("hyperspec_img.png", my_data)

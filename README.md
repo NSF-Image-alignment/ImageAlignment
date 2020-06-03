@@ -6,33 +6,33 @@ To create an environment and install the dependencies using anaconda, run the co
 ```bash
 conda env create -f align.yaml
 ```
+
 ### Create an output folder in the image_alignment folder using the command -
 ```bash
 mkdir output
 ```
 
-
-### To run the scripts for a single RGB image and hyperspectral matrix pair, use the command:
+### To run the scripts for a single RGB image and hyperspectral matrix pair, use the command (to compute homography matrix):
 ```bash
-python main.py 
+python main.py --hyper-img hyper_image_path --rgb-img rgb_image_path --mode 1
 ```
-With mode = 1
-
 
 ### To run for a set of images.
 1. Modify the .csv file 
 
     Format:
-    rgb_images:
-    rgb_img_path
+    header - rgb_images
+    filename1 - rgb_img_path
+    filename2
+    filename3
+    
     
     (Example file is present in the test_pipeline folder)
 
 2. Run the script with the command - 
 ```bash
-python main.py 
+python main.py --hyper-img hyperspectral_image_path --img-csv csv_rgb_image_paths --mode 2
 ```
-With mode = 2
     
   
 ### The directory structure before running the scripts should look like -

@@ -1,44 +1,71 @@
 #!usr/bin/python
+
 ###############################################################################
 __authors__ = "Jia Yi Li, Damanpreet Kaur"
 __description__ = "Main function for Image Alignment"
-__date__ = "11/12/2019"
-__version__ = 1.1
+
+__date__ = "06/01/2020"
+__maintainer__ = "Damanpreet Kaur"
+__version__ = 1.2 
 ###############################################################################
-import new_utils
+
+import utils as utils
 import pandas as pd
 import os
 import cv2
 import numpy as np
 from config import config as cfg
+from skimage.io import imread
+import argparse
+from PIL import Image
+idx_palette = np.reshape(np.asarray(cfg.class_color), (-1))
 
-if __name__ == "__main__":
-    #mode =1: calculate homography matrix
-    #mode =2: apply homography matrix on rgb images from csv
-    mode = 2
 
-    #grid_type = 1: 16 samples
-    #grid_type = 2: 20 samples
-    #provide a grid_type number other than 1 and 2 if apply new homography matrix
-    grid_type = 2
+def get_arguments():
+     """
+         Parse all the command line arguments.
+     """
+     parser = argparse.ArgumentParser(description="DeepLab-ResNet Network")
+     parser.add_argument("--img-csv", '-i', type=str, default=None, help="CSV containing paths for RGB/segmented images. For mode 1 - it should have only one image_path in the CSV file.")
+     parser.add_argument("--hyper-img", type=str, default=None, help="Chlorophyll matrix")
+     parser.add_argument("--rgb-img", '-r', type=str, default=None, help="Chlorophyll matrix")
+     parser.add_argument("--ch", type=int, default=2, help="RGB channel to be matched with the hyperspectral. Applicable for mode 1.")
+     parser.add_argument("--grid-type", type=int, choices=[1,2], default=2, help="Grid type options. 1 for 16 samples and 2 for 20 samples.")
+     parser.add_argument("--mode", type=int, choices=[1,2], default=2, help="Select Mode (1- to compute the Homography matrix, 2- Apply existing Homography matrix)")
+     parser.add_argument("--read_hyper", type=bool, default=True, help="Whether to read the hyperspectral excel file. Default=True. This argument is only valid for mode 1.")
+     return parser.parse_args()
 
-    if mode == 2:
-        #provide the hyper_img of the associated grid_type
-        hyper_img_path = r".\output\GWO1_I2.0_F1.9_L80_103450_0_0_0_rgb\full_hyperspec_img.png"
+
+def main(args):
+    # read the images
+    try:
+        hyper_img_path = args.hyper_img
+    except:
+        raise Exception("Please provide path the hyperspectral image for alignment.")
+
+    if args.rgb_img:
+        rgb_image_path = args.rgb_img
+
+    #read the image paths from csv
+    if args.img_csv or args.mode==2:
+        try:
+            data = pd.read_csv(args.img_csv)
+            rgb_images = data['rgb_images']
+        except:
+            if not args.img_csv:
+                raise Exception("Please add the rgb images in a csv, since mode is 2.")
+            else:
+                raise Exception("Error while processing the csv file.")
+
+    if args.mode == 2:
+        # read the hyperspectral image
         hyp_img = cv2.imread(hyper_img_path)
 
-        csv_path = r".\test_pipeline\test.csv"
-        #read the paths from csv
-        data = pd.read_csv(csv_path)
-        rgb_images = data['rgb_images']
-
         #apply the following h_matrix
-        if grid_type == 1:
+        if args.grid_type == 1:
             h_matrix = cfg.h_matrix_1
-        elif grid_type == 2:
+        elif args.grid_type == 2:
             h_matrix = cfg.h_matrix_2
-            print("works")
-            exit(0)
         else:
             #provide the homography matrix to be applied
             h_matrix = np.array(
@@ -49,23 +76,32 @@ if __name__ == "__main__":
         #preprocess the rgb_img based on given hyperspectral image type
         #apply h_matrix to all rgb images provided in csv file
         for rgb_img_path in rgb_images:
-            rgb_img = cv2.imread(rgb_img_path)
-            prep_rgb_img = new_utils.preprocess_rgb(rgb_img, hyp_img)
-            height, width = prep_rgb_img.shape[:2]
-            warped_rgb = cv2.warpPerspective(prep_rgb_img, h_matrix, (width, height))
-            cv2.imwrite(rgb_img_path[:-4]+"_processed.jpg", warped_rgb)
+            if '.jpg' in rgb_img_path:
+                rgb_img = cv2.imread(rgb_img_path)
+                ext = 'jpg'
+            elif '.png' in rgb_img_path:
+                rgb_img = imread(rgb_img_path, pilmode='P')
+                ext = 'png'
+            else:
+                raise Exception("Image file type not supported.")
+            
+            if len(hyp_img.shape)==2:   height, width = hyp_img.shape
+            else: height,width,_ = hyp_img.shape
+            prep_rgb_img = utils.preprocess_rgb(rgb_img, height, width, ext)
 
-    if mode == 1:
-        #True:if need to read data from .xlsx files for hyperspectral images:
-        #False:if hyper and rgb images are already obtained and preprocessed
-        read_hyper = True
+            if ext=='png':
+                h1_matrix = h_matrix.flatten()[:-1]
+                warped_rgb = prep_rgb_img.transform(prep_rgb_img.size, Image.PERSPECTIVE, h1_matrix, Image.NEAREST)
+                warped_rgb.putpalette(list(idx_palette))
+                warped_rgb.save(rgb_img_path[:-4]+"_processed.png")
+            else:
+                warped_rgb = cv2.warpPerspective(prep_rgb_img, h_matrix, (width, height))
+                cv2.imwrite(rgb_img_path[:-4]+"_processed.jpg", warped_rgb)
 
-        #if True: provide the path to the .xlsx file and raw rgb image
-        HYPERSPECTRAL_IMG = r"Alignment_testing/TPB3_I5.0_F1.9_L100_171409_3_0_4-CLS,1.xlsx"
-        RGB_IMG = r"Alignment_testing/TPB3_I5.0_F1.9_L100_171409_3_0_4_rgb.jpg"
+    elif args.mode == 1:
 
         # create the output directory for the image
-        DIR_NAME = '.'.join(RGB_IMG.split('/')[-1].split('.')[:-1])
+        DIR_NAME = '.'.join(rgb_image_path.split('/')[-1].split('.')[:-1])
         directory_path = os.path.join('output', DIR_NAME)
         if not os.path.exists(directory_path):
             os.mkdir(directory_path)
@@ -75,42 +111,38 @@ if __name__ == "__main__":
         sheet_number = None if reading all sheets of hyper_img workbook
         else, set sheet_number = the specific sheet_number
         '''
-        if(read_hyper is True):
-            rgb_img, hyp_img = new_utils.preprocess_hyper_and_rgb(\
-            HYPERSPECTRAL_IMG, RGB_IMG, directory_path, sheet_number=2)
-            hyp_img = cv2.cvtColor(hyp_img, cv2.COLOR_GRAY2BGR)
-
-        #provide the paths to processed hyper_img and rgb_img
+        if(args.read_hyper is True):
+            rgb_img, hyp_img = utils.preprocess_hyper_and_rgb(\
+            hyper_img_path, rgb_image_path, directory_path, sheet_number=2)
+            if hyper_img_path.split('.')[-1]!='csv':
+                hyp_img = cv2.cvtColor(hyp_img, cv2.COLOR_GRAY2BGR)
         else:
-            # load images
-            hyper_img_path = r"\output\GWO1_I2.0_F1.9_L80_103450_0_0_0_rgb\full_hyperspec_img.png"
-            rgb_img_path =  r"\output\GWO1_I2.0_F1.9_L80_103450_0_0_0_rgb\rgb_prep.png"
             #read images
-            rgb_img = cv2.imread(rgb_img_path)
+            rgb_img = cv2.imread(rgb_image_path)
             hyp_img = cv2.imread(hyper_img_path)
+        
+        #save hyperspectral image
+        cv2.imwrite("hyp_img.jpg", hyp_img)
 
         #align the images and get the results
         #open new_utils to tune the tunable parameters for better homography matrix
-        align_img, unalign_img, warped_rgb, homography = new_utils.align_image(hyp_img, rgb_img)
+        align_img, unalign_img, warped_rgb, homography = utils.align_image(hyp_img, rgb_img, args.ch)
 
-# Show the images:
-        # cv2.imshow("align_img", align_img)
-        # cv2.waitKey(0)
-        # cv2.imshow("unalign_img", unalign_img)
-        # cv2.waitKey(0)
-        # cv2.imshow("warped_rgb", warped_rgb)
-        # cv2.waitKey(0)
-
-# Print estimated homography
+        # Print the computed homography
         print("Homography : \n", homography)
         print()
         print("Saving aligned image at:");
         print(directory_path)
 
-# Write transformed rgb, aligned, and unaligned images to disk.
+        # Write transformed rgb, aligned, and unaligned images to disk.
         warped_name = r"\transformed_rgb.jpg"
         cv2.imwrite(directory_path+warped_name, warped_rgb)
         align_name = r"\aligned.jpg"
         cv2.imwrite(directory_path+align_name, align_img)
         unalign_name = r"\unaligned.jpg"
         cv2.imwrite(directory_path+unalign_name, unalign_img)
+
+
+if __name__ == "__main__":
+    args = get_arguments()
+    main(args)
