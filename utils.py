@@ -218,7 +218,7 @@ def preprocess_hyper_and_rgb(hs_img, rgb_image, directory_path, sheet_number):
     if len(hyper_img.shape)==2: h, w = hyper_img.shape
     else: h, w, _ = hyper_img.shape
     rgb_prep = preprocess_rgb(rgb_img, h, w , 'jpg') # ext - jpg since alignment will not computed with the segmented image.
-    cv2.imwrite(directory_path+"/rgb_prep.png", rgb_prep)
+    # cv2.imwrite(directory_path+"/rgb_prep.png", rgb_prep)
     print("------------Preprocess is saved and finished.-------------------")
 
     return rgb_prep, hyper_img
