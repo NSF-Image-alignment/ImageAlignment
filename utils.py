@@ -276,12 +276,12 @@ def align_image(hyp_img, rgb_img, ch=-1):
     # uncomment the below section to test the keypoints. 
     good = [g for i,g in enumerate(good) if mask[i]==1]
     img = cv2.drawMatches(hyp_gray,kpts1,rgb_gray,kpts2,good,None)
-    plt.imshow(img); plt.show()
+    # plt.imshow(img); plt.show()
 
     # apply the homography matrix 
     height, width = rgb_img.shape[:2]
     warpImage = cv2.warpPerspective(rgb_gray, h_transformation, (width, height))
-    plt.imshow(warpImage); plt.show()
+    # plt.imshow(warpImage); plt.show()
 
     align_img = cv2.addWeighted(warpImage, .3, hyp_img, .7, 1)
     unalign_img = cv2.addWeighted(rgb_gray, .3, hyp_img, .7, 1)
