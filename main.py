@@ -135,11 +135,11 @@ def main(args):
         print(directory_path)
 
         # Write transformed rgb, aligned, and unaligned images to disk.
-        warped_name = r"\transformed_rgb.jpg"
+        warped_name = r"/transformed_rgb.jpg"
         cv2.imwrite(directory_path+warped_name, warped_rgb)
-        align_name = r"\aligned.jpg"
+        align_name = r"/aligned.jpg"
         cv2.imwrite(directory_path+align_name, align_img)
-        unalign_name = r"\unaligned.jpg"
+        unalign_name = r"/unaligned.jpg"
         cv2.imwrite(directory_path+unalign_name, unalign_img)
 
 
