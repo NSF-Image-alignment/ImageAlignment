@@ -103,8 +103,8 @@ def main(args):
         # create the output directory for the image
         DIR_NAME = '.'.join(rgb_image_path.split('/')[-1].split('.')[:-1])
         directory_path = os.path.join('output', DIR_NAME)
-        if not os.path.exists(directory_path):
-            os.mkdir(directory_path)
+        if not os.path.exists('output'):
+            os.mkdir('output')
 
         #call function to read hyper data and preprocess rgb images
         '''
