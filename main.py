@@ -105,6 +105,8 @@ def main(args):
         directory_path = os.path.join('output', DIR_NAME)
         if not os.path.exists('output'):
             os.mkdir('output')
+        if not os.path.exists(directory_path):
+            os.mkdir(directory_path)
 
         #call function to read hyper data and preprocess rgb images
         '''
