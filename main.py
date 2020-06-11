@@ -60,10 +60,10 @@ def main(args):
     if args.mode == 2:
         # read the hyperspectral image
         if '.csv' in hyper_img_path:
-		hyp_img = genfromtxt(hyper_img_path, delimiter=',')
-        	hyp_img = np.uint8(hyper_img)
-	else:
-		hyp_img = cv2.imread(hyper_img_path)
+            hyp_img = genfromtxt(hyper_img_path, delimiter=',')
+            hyp_img = np.uint8(hyp_img)
+        else:
+            hyp_img = cv2.imread(hyper_img_path)
 
         #apply the following h_matrix
         if args.grid_type == 1:
@@ -101,6 +101,8 @@ def main(args):
             else:
                 warped_rgb = cv2.warpPerspective(prep_rgb_img, h_matrix, (width, height))
                 cv2.imwrite(rgb_img_path[:-4]+"_processed.jpg", warped_rgb)
+
+        import pdb; pdb.set_trace()
 
     elif args.mode == 1:
 
