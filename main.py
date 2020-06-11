@@ -19,7 +19,7 @@ from skimage.io import imread
 import argparse
 from PIL import Image
 idx_palette = np.reshape(np.asarray(cfg.class_color), (-1))
-
+from numpy import genfromtxt
 
 def get_arguments():
      """
@@ -59,7 +59,11 @@ def main(args):
 
     if args.mode == 2:
         # read the hyperspectral image
-        hyp_img = cv2.imread(hyper_img_path)
+        if '.csv' in hyper_img_path:
+		hyp_img = genfromtxt(hyper_img_path, delimiter=',')
+        	hyp_img = np.uint8(hyper_img)
+	else:
+		hyp_img = cv2.imread(hyper_img_path)
 
         #apply the following h_matrix
         if args.grid_type == 1:
