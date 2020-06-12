@@ -102,8 +102,6 @@ def main(args):
                 warped_rgb = cv2.warpPerspective(prep_rgb_img, h_matrix, (width, height))
                 cv2.imwrite(rgb_img_path[:-4]+"_processed.jpg", warped_rgb)
 
-        import pdb; pdb.set_trace()
-
     elif args.mode == 1:
 
         # create the output directory for the image
