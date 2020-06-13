@@ -71,11 +71,7 @@ def main(args):
         elif args.grid_type == 2:
             h_matrix = cfg.h_matrix_2
         else:
-            #provide the homography matrix to be applied
-            h_matrix = np.array(
-            [[ 1.20929054e+00,  9.35797442e-03, -1.49528686e+02],
-            [-1.63188868e-02,  1.03924034e+00, -1.54596767e+02],
-            [-2.07130119e-05,  7.15784176e-06,  1.00000000e+00]])
+            raise Exception("Grid type not supported.")
 
         #preprocess the rgb_img based on given hyperspectral image type
         #apply h_matrix to all rgb images provided in csv file
@@ -94,14 +90,13 @@ def main(args):
             prep_rgb_img = utils.preprocess_rgb(rgb_img, height, width, ext)
 
             if ext=='png':
-                h1_matrix = h_matrix.flatten()[:-1]
-                warped_rgb = prep_rgb_img.transform(prep_rgb_img.size, Image.PERSPECTIVE, h1_matrix, Image.NEAREST)
+                h_matrix = h_matrix.flatten()[:-1]
+                warped_rgb = prep_rgb_img.transform(prep_rgb_img.size, Image.PERSPECTIVE, h_matrix, Image.NEAREST)
                 warped_rgb.putpalette(list(idx_palette))
                 warped_rgb.save(rgb_img_path[:-4]+"_processed.png")
             else:
                 warped_rgb = cv2.warpPerspective(prep_rgb_img, h_matrix, (width, height))
                 cv2.imwrite(rgb_img_path[:-4]+"_processed.jpg", warped_rgb)
-
     elif args.mode == 1:
 
         # create the output directory for the image
@@ -124,6 +119,7 @@ def main(args):
             #read images
             rgb_img = cv2.imread(rgb_image_path)
             hyp_img = cv2.imread(hyper_img_path)
+
         
         #save hyperspectral image
         cv2.imwrite("hyp_img.jpg", hyp_img)

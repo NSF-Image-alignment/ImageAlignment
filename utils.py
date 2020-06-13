@@ -164,7 +164,7 @@ def preprocess_rgb(rgb_img, h, w, ext):
     final_flipped = cv2.flip(rgb_img, 1)
     #rotate counterclockwise = transpose + flip horizontally
     hor_flipped = cv2.flip(final_flipped, 0)
-    transpose_im = cv2.transpose(hor_flipped)
+    # transpose_im = cv2.transpose(hor_flipped)
     #resize rgb
     # transpose_im = transpose_im.astype(np.int32)
     
@@ -173,9 +173,9 @@ def preprocess_rgb(rgb_img, h, w, ext):
     # height = rgb_img.shape[0]
     # width =  rgb_img.shape[1]
     if ext == 'jpg':
-        rgb_img_resize = cv2.resize(transpose_im, (w, h))
+        rgb_img_resize = cv2.resize(hor_flipped, (w, h))
     else:
-        rgb_img_resize = Image.fromarray(transpose_im).resize((w, h), Image.NEAREST)
+        rgb_img_resize = Image.fromarray(hor_flipped).resize((w, h), Image.NEAREST)
     return rgb_img_resize
 
 
