@@ -65,14 +65,6 @@ def main(args):
         else:
             hyp_img = cv2.imread(hyper_img_path)
 
-        #apply the following h_matrix
-        if args.grid_type == 1:
-            h_matrix = cfg.h_matrix_1
-        elif args.grid_type == 2:
-            h_matrix = cfg.h_matrix_2
-        else:
-            raise Exception("Grid type not supported.")
-
         #preprocess the rgb_img based on given hyperspectral image type
         #apply h_matrix to all rgb images provided in csv file
         for rgb_img_path in rgb_images:
@@ -85,18 +77,26 @@ def main(args):
             else:
                 raise Exception("Image file type not supported.")
             
+            # Homography matrix
+            if args.grid_type == 1:
+                h_matrix = cfg.h_matrix_1_segment if ext=='png' else cfg.h_matrix_1
+            elif args.grid_type == 2:
+                h_matrix = cfg.h_matrix_2_segment if ext=='png' else cfg.h_matrix_2
+            else:
+                raise Exception("Grid type not supported.")
             if len(hyp_img.shape)==2:   height, width = hyp_img.shape
             else: height,width,_ = hyp_img.shape
             prep_rgb_img = utils.preprocess_rgb(rgb_img, height, width, ext)
 
+            warped_rgb = cv2.warpPerspective(np.array(prep_rgb_img), h_matrix, (width, height), flags=cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT)
             if ext=='png':
-                h_matrix = h_matrix.flatten()[:-1]
-                warped_rgb = prep_rgb_img.transform(prep_rgb_img.size, Image.PERSPECTIVE, h_matrix, Image.NEAREST)
+                warped_rgb = Image.fromarray(warped_rgb)
+                
                 warped_rgb.putpalette(list(idx_palette))
                 warped_rgb.save(rgb_img_path[:-4]+"_processed.png")
-            else:
-                warped_rgb = cv2.warpPerspective(prep_rgb_img, h_matrix, (width, height))
-                cv2.imwrite(rgb_img_path[:-4]+"_processed.jpg", warped_rgb)
+                continue
+            cv2.imwrite(rgb_img_path[:-4]+"_processed.jpg", warped_rgb)
+
     elif args.mode == 1:
 
         # create the output directory for the image
