@@ -84,14 +84,14 @@ def main(args):
                 h_matrix = cfg.h_matrix_2_segment if ext=='png' else cfg.h_matrix_2
             else:
                 raise Exception("Grid type not supported.")
+                
             if len(hyp_img.shape)==2:   height, width = hyp_img.shape
             else: height,width,_ = hyp_img.shape
-            prep_rgb_img = utils.preprocess_rgb(rgb_img, height, width, ext)
 
+            prep_rgb_img = utils.preprocess_rgb(rgb_img, height, width, ext)
             warped_rgb = cv2.warpPerspective(np.array(prep_rgb_img), h_matrix, (width, height), flags=cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT)
             if ext=='png':
                 warped_rgb = Image.fromarray(warped_rgb)
-                
                 warped_rgb.putpalette(list(idx_palette))
                 warped_rgb.save(rgb_img_path[:-4]+"_processed.png")
                 continue
