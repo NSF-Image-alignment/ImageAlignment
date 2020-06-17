@@ -146,8 +146,7 @@ def read_hyper_data(hs_img, directory_path, sheet_number, choose_best = False):
 
         return imgs
 
-#class for hyperspectral images preprocessing
-# class HyperspecPreprocess:
+
 def preprocess_hyperdata(data):
     """
         Preprocess the hyperspectral image matrix to align it according to the rgb image.
@@ -160,22 +159,19 @@ def preprocess_hyperdata(data):
 
 #resize and rotate rgb image
 def preprocess_rgb(rgb_img, h, w, ext):
-    #flip verticall
-    final_flipped = cv2.flip(rgb_img, 1)
-    #rotate counterclockwise = transpose + flip horizontally
-    hor_flipped = cv2.flip(final_flipped, 0)
-    # transpose_im = cv2.transpose(hor_flipped)
-    #resize rgb
-    # transpose_im = transpose_im.astype(np.int32)
+    rgb_img = cv2.rotate(rgb_img, rotateCode=0)
+    rgb_img = cv2.rotate(rgb_img, rotateCode=1)
+    rgb_img = cv2.flip(rgb_img, 1)
     
     ratio = w/h
     # print(ratio)
     # height = rgb_img.shape[0]
     # width =  rgb_img.shape[1]
     if ext == 'jpg':
-        rgb_img_resize = cv2.resize(hor_flipped, (w, h))
+        rgb_img_resize = cv2.resize(rgb_img, (w, h))
     else:
-        rgb_img_resize = Image.fromarray(hor_flipped).resize((w, h), Image.NEAREST)
+        rgb_img_resize = Image.fromarray(rgb_img).resize((w, h), Image.NEAREST)
+    
     return rgb_img_resize
 
 
@@ -204,21 +200,24 @@ class ImageAlignment:
 #This function reads the hyperspectral excel workbook
 #and get the correct orientation of the hyper image
 #and preprocess hyper and rgb image for alignment
-def preprocess_hyper_and_rgb(hs_img, rgb_image, directory_path, sheet_number):
+def preprocess_hyper_and_rgb(hyper_img, rgb_image, directory_path, sheet_number):
     #read hyperspectral data from a csv file
-    if hs_img.split('.')[-1]=='csv':
-        hyper_img = genfromtxt(hs_img, delimiter=',')
-        hyper_img = np.uint8(hyper_img)
-    else:   #read hyperspectral data from excel workbook
-        hyper_img = read_hyper_data(hs_img, directory_path,\
-                                sheet_number, choose_best = False)
+    # ext = hs_img.split('.')[-1]
+    # if ext=='csv':
+    #     hyper_img = genfromtxt(hs_img, delimiter=',')
+    #     hyper_img = np.uint8(hyper_img)
+    # elif ext=='jpg':
+    #     hyper_img = cv2.imread(hs_img)
+    # else:   #read hyperspectral data from excel workbook
+    #     hyper_img = read_hyper_data(hs_img, directory_path,\
+    #                             sheet_number, choose_best = False)
 
     #call functions to preprocess rgb image
     rgb_img = cv2.imread(rgb_image)
     if len(hyper_img.shape)==2: h, w = hyper_img.shape
     else: h, w, _ = hyper_img.shape
-    rgb_prep = preprocess_rgb(rgb_img, h, w , 'jpg') # ext - jpg since alignment will not computed with the segmented image.
-    # cv2.imwrite(directory_path+"/rgb_prep.png", rgb_prep)
+    rgb_prep = preprocess_rgb(rgb_img, h, w , 'jpg') 
+
     print("------------Preprocess is saved and finished.-------------------")
 
     return rgb_prep, hyper_img
@@ -227,12 +226,9 @@ def preprocess_hyper_and_rgb(hs_img, rgb_image, directory_path, sheet_number):
 #This function calculates the homography matrix for the images:
 def align_image(hyp_img, rgb_img, ch=-1):
     if ch==-1:
-        # preprocess rgb to hsv
-        rgb_hsv = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2HSV)
-        # Convert images to grayscale
-        rgb_gray = cv2.cvtColor(rgb_hsv, cv2.COLOR_BGR2GRAY)
+        rgb_gray = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2GRAY)            # Convert images to grayscale
     else:
-        rgb_gray = rgb_img[:,:,ch] # selecting the passed channel from the rgb image
+        rgb_gray = rgb_img[:,:,ch]                                      # select the channel from the rgb image
 
     # read hyperspectral image
     hyp_gray = hyp_img
@@ -276,15 +272,13 @@ def align_image(hyp_img, rgb_img, ch=-1):
     # uncomment the below section to test the keypoints. 
     good = [g for i,g in enumerate(good) if mask[i]==1]
     img = cv2.drawMatches(hyp_gray,kpts1,rgb_gray,kpts2,good,None)
-    # plt.imshow(img); plt.show()
 
     # apply the homography matrix 
     height, width = rgb_img.shape[:2]
     warpImage = cv2.warpPerspective(rgb_gray, h_transformation, (width, height))
-    # plt.imshow(warpImage); plt.show()
 
-    align_img = cv2.addWeighted(warpImage, .3, hyp_img, .7, 1)
-    unalign_img = cv2.addWeighted(rgb_gray, .3, hyp_img, .7, 1)
+    align_img = cv2.addWeighted(warpImage, .3, hyp_gray, .7, 1)
+    unalign_img = cv2.addWeighted(rgb_gray, .3, hyp_gray, .7, 1)
 
     return align_img, unalign_img, warpImage, h_transformation
 

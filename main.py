@@ -43,6 +43,16 @@ def main(args):
     except:
         raise Exception("Please provide path the hyperspectral image for alignment.")
 
+    # read the hyperspectral image
+    if '.csv' in hyper_img_path:
+        hyp_img = genfromtxt(hyper_img_path, delimiter=',')
+        hyp_img = np.uint8(hyp_img)
+
+        hyp_img = cv2.rotate(hyp_img, rotateCode=1)         # rotate the hyperspectral image 
+        hyp_img = cv2.flip(hyp_img, 1)
+    else:
+        hyp_img = cv2.imread(hyper_img_path)
+
     if args.rgb_img:
         rgb_image_path = args.rgb_img
 
@@ -65,8 +75,8 @@ def main(args):
         else:
             hyp_img = cv2.imread(hyper_img_path)
 
-        #preprocess the rgb_img based on given hyperspectral image type
-        #apply h_matrix to all rgb images provided in csv file
+        # preprocess the rgb_img based on given hyperspectral image type
+        # apply h_matrix to all rgb images provided in csv file
         for rgb_img_path in rgb_images:
             if '.jpg' in rgb_img_path:
                 rgb_img = cv2.imread(rgb_img_path)
@@ -105,27 +115,24 @@ def main(args):
         if not os.path.exists('output'):
             os.mkdir('output')
 
-        #call function to read hyper data and preprocess rgb images
+        # call function to read hyper data and preprocess rgb images
         '''
         sheet_number = None if reading all sheets of hyper_img workbook
         else, set sheet_number = the specific sheet_number
         '''
         if(args.read_hyper is True):
             rgb_img, hyp_img = utils.preprocess_hyper_and_rgb(\
-            hyper_img_path, rgb_image_path, directory_path, sheet_number=2)
-            if hyper_img_path.split('.')[-1]!='csv':
-                hyp_img = cv2.cvtColor(hyp_img, cv2.COLOR_GRAY2BGR)
+            hyp_img, rgb_image_path, directory_path, sheet_number=2)
         else:
             #read images
             rgb_img = cv2.imread(rgb_image_path)
             hyp_img = cv2.imread(hyper_img_path)
-
         
-        #save hyperspectral image
+        # save hyperspectral image
         cv2.imwrite("hyp_img.jpg", hyp_img)
 
-        #align the images and get the results
-        #open new_utils to tune the tunable parameters for better homography matrix
+        # align the images and get the results
+        # open new_utils to tune the tunable parameters for better homography matrix
         align_img, unalign_img, warped_rgb, homography = utils.align_image(hyp_img, rgb_img, args.ch)
 
         # Print the computed homography
