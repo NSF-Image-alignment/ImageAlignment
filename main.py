@@ -48,8 +48,8 @@ def main(args):
         hyp_img = genfromtxt(hyper_img_path, delimiter=',')
         hyp_img = np.uint8(hyp_img)
 
-        hyp_img = cv2.rotate(hyp_img, rotateCode=1)         # rotate the hyperspectral image 
-        hyp_img = cv2.flip(hyp_img, 1)
+        # hyp_img = cv2.rotate(yp_img, rotateCode=1)         # rotate the hyperspectral image 
+        # hyp_img = cv2.flip(hyp_img, 1)
     else:
         hyp_img = cv2.imread(hyper_img_path)
 
