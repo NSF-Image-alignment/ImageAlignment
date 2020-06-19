@@ -4,6 +4,7 @@ from PIL import Image
 from skimage.io import imread
 import numpy as np
 import sys
+import PIL
 
 
 class_color = [[0,   0, 0], # 0-background
@@ -38,13 +39,16 @@ def pad_image(file_path):
     print('Reading file ' + str(file_path))
     
     expanded_img = expand2square(pil_img = file_in, background_color=0)
-    expanded_img = expanded_img.resize((4000,4000))
-    if not os.path.exists('resized'):
-        os.makedirs('resized') # https://www.tutorialspoint.com/How-can-I-create-a-directory-if-it-does-not-exist-using-Python
+    
+    # if not os.path.exists('resized'):
+    #     os.makedirs('resized') # https://www.tutorialspoint.com/How-can-I-create-a-directory-if-it-does-not-exist-using-Python
 
     img_out_path = file_path.replace('segment_cropped', 'segment_uncropped')
+    filterim = PIL.Image.BICUBIC if '.png' not in file_path else PIL.Image.NEAREST
+    expanded_img = expanded_img.resize((4000,4000), resample=filterim)
+    
     print('Writing file ' + str(img_out_path))
-    expanded_img = expanded_img.rotate(180, expand=True)
+    expanded_img = expanded_img.rotate(180, expand=True, resample=PIL.Image.NEAREST)
     ########## WE ARE ROTATING IMAGES 180deg here because NN wants label on bottom and alignment homography matrix currently used wants them on top
     if '.png' in file_path:
         expanded_img.putpalette(list(idx_palette))
@@ -63,8 +67,8 @@ def expandloop(wd):
         pad_image(file)
 
 def main():
-    # expandloop(sys.argv[1])
-    pad_image(sys.argv[1])
+    expandloop(sys.argv[1])
+    #pad_image(sys.argv[1])
 
 if __name__=="__main__":
     main()

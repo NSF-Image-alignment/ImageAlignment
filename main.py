@@ -27,8 +27,8 @@ def get_arguments():
      """
      parser = argparse.ArgumentParser(description="DeepLab-ResNet Network")
      parser.add_argument("--img-csv", '-i', type=str, default=None, help="CSV containing paths for RGB/segmented images. For mode 1 - it should have only one image_path in the CSV file.")
-     parser.add_argument("--hyper-img", type=str, default=None, help="Chlorophyll matrix")
-     parser.add_argument("--rgb-img", '-r', type=str, default=None, help="Chlorophyll matrix")
+     parser.add_argument("--hyper-img", type=str, required=True, help="Chlorophyll matrix")
+     parser.add_argument("--rgb-img", '-r', type=str, help="Chlorophyll matrix")
      parser.add_argument("--ch", type=int, default=2, help="RGB channel to be matched with the hyperspectral. Applicable for mode 1.")
      parser.add_argument("--grid-type", type=int, choices=[1,2], default=2, help="Grid type options. 1 for 16 samples and 2 for 20 samples.")
      parser.add_argument("--mode", type=int, choices=[1,2], default=2, help="Select Mode (1- to compute the Homography matrix, 2- Apply existing Homography matrix)")
@@ -38,10 +38,11 @@ def get_arguments():
 
 def main(args):
     # read the images
-    try:
-        hyper_img_path = args.hyper_img
-    except:
-        raise Exception("Please provide path the hyperspectral image for alignment.")
+    if not args.hyper_img:
+        print("Please provide path for the hyperspectral image for alignment.")
+        exit()
+    hyper_img_path = args.hyper_img
+    
 
     # read the hyperspectral image
     if '.csv' in hyper_img_path:
@@ -98,8 +99,11 @@ def main(args):
             if len(hyp_img.shape)==2:   height, width = hyp_img.shape
             else: height,width,_ = hyp_img.shape
 
+            print(np.unique(rgb_img))
             prep_rgb_img = utils.preprocess_rgb(rgb_img, height, width, ext)
+            print(np.unique(prep_rgb_img))
             warped_rgb = cv2.warpPerspective(np.array(prep_rgb_img), h_matrix, (width, height), flags=cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT)
+            print(np.unique(warped_rgb))
             if ext=='png':
                 warped_rgb = Image.fromarray(warped_rgb)
                 warped_rgb.putpalette(list(idx_palette))
