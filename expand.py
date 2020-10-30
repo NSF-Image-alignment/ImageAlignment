@@ -59,7 +59,7 @@ def expandloop(wd):
     file_list = os.listdir(wd)
     os.chdir(wd)
     print('Working in directory' + str(wd))
-    file_list = [x for x in file_list if '.png' in x]
+    file_list = [x for x in file_list if '_cropped.png' in x]
     print('Number of files: ' + str(len(file_list)))
     #print(file_list)
     #return(None)
