@@ -33,6 +33,9 @@ def get_arguments():
      parser.add_argument("--grid-type", type=int, choices=[1,2], default=2, help="Grid type options. 1 for 16 samples and 2 for 20 samples.")
      parser.add_argument("--mode", type=int, choices=[1,2], default=2, help="Select Mode (1- to compute the Homography matrix, 2- Apply existing Homography matrix)")
      parser.add_argument("--read_hyper", type=bool, default=True, help="Whether to read the hyperspectral excel file. Default=True. This argument is only valid for mode 1.")
+     parser.add_argument("--image_thresh_low", type=int, default=None, help="Image Threshold low.")
+     parser.add_argument("--image_thresh_high", type=int, default=None, help="Image Threshold low.")
+     parser.add_argument("--distance", type=float, default=0.6, help="Distance to find good matches. More distance returns more matches which may not be good.")
      return parser.parse_args()
 
 
@@ -137,7 +140,7 @@ def main(args):
 
         # align the images and get the results
         # open new_utils to tune the tunable parameters for better homography matrix
-        align_img, unalign_img, warped_rgb, homography = utils.align_image(hyp_img, rgb_img, args.ch)
+        align_img, unalign_img, warped_rgb, homography = utils.align_image(hyp_img, rgb_img, args.distance, args.ch, args.image_thresh_low, args.image_thresh_high)
 
         # Print the computed homography
         print("Homography : \n", homography)

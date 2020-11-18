@@ -224,7 +224,7 @@ def preprocess_hyper_and_rgb(hyper_img, rgb_image, directory_path, sheet_number)
 
 
 #This function calculates the homography matrix for the images:
-def align_image(hyp_img, rgb_img, ch=-1):
+def align_image(hyp_img, rgb_img, distance=0.6, ch=-1, image_thresh_low=None, image_thresh_high=None):
     if ch==-1:
         rgb_gray = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2GRAY)            # Convert images to grayscale
     else:
@@ -235,6 +235,10 @@ def align_image(hyp_img, rgb_img, ch=-1):
     if len(hyp_img.shape)==3:
         hyp_gray = cv2.cvtColor(hyp_img, cv2.COLOR_BGR2GRAY)
 
+    if image_thresh_low or image_thresh_high:
+        _, hyp_thresh = cv2.threshold(hyp_gray, image_thresh_low, image_thresh_high, cv2.THRESH_BINARY)
+        hyp_gray += hyp_thresh
+
     '''
         Fine-tune params according to the image.
         n_features - Number of best features to retain. Will be 0.
@@ -244,7 +248,7 @@ def align_image(hyp_img, rgb_img, ch=-1):
         edgeThreshold - Larger the edge threshold, more features are retained. 
                 Depends on how strong the corners and edges are.
     '''
-    sift = cv2.xfeatures2d.SIFT_create(nfeatures=0, nOctaveLayers=5, edgeThreshold=10, sigma=1.6) 
+    sift = cv2.xfeatures2d.SIFT_create(nfeatures=0, nOctaveLayers=3, edgeThreshold=100, sigma=1.6) 
     
     # finding the keypoint descriptors
     kpts1, descs1 = sift.detectAndCompute(hyp_gray, None)
@@ -256,7 +260,7 @@ def align_image(hyp_img, rgb_img, ch=-1):
     matches = sorted(matches, key = lambda x:x[0].distance) # sort the matches
 
     # retain the best matches
-    good = [m1 for (m1, m2) in matches if m1.distance < 0.6 * m2.distance]
+    good = [m1 for (m1, m2) in matches if m1.distance < distance * m2.distance]
     if len(good)<4:
         print("No of matches are less than 4. Cannot run RANSAC")
         exit()
