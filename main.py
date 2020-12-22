@@ -4,9 +4,9 @@
 __authors__ = "Jia Yi Li, Damanpreet Kaur"
 __description__ = "Main function for Image Alignment"
 
-__date__ = "06/01/2020"
+__date__ = "22/12/2020"
 __maintainer__ = "Damanpreet Kaur"
-__version__ = 1.2 
+__version__ = 1.3
 ###############################################################################
 
 import utils as utils
@@ -36,6 +36,7 @@ def get_arguments():
      parser.add_argument("--image_thresh_low", type=int, default=None, help="Image Threshold low.")
      parser.add_argument("--image_thresh_high", type=int, default=None, help="Image Threshold low.")
      parser.add_argument("--distance", type=float, default=0.6, help="Distance to find good matches. More distance returns more matches which may not be good.")
+     parser.add_argument("--gaussian_sigma", type=float, default=1.6, help="Gaussian kernel size. Modify according to the image resolution.")
      return parser.parse_args()
 
 
@@ -51,9 +52,6 @@ def main(args):
     if '.csv' in hyper_img_path:
         hyp_img = genfromtxt(hyper_img_path, delimiter=',')
         hyp_img = np.uint8(hyp_img)
-
-        # hyp_img = cv2.rotate(yp_img, rotateCode=1)         # rotate the hyperspectral image 
-        # hyp_img = cv2.flip(hyp_img, 1)
     else:
         hyp_img = cv2.imread(hyper_img_path)
 
@@ -140,7 +138,7 @@ def main(args):
 
         # align the images and get the results
         # open new_utils to tune the tunable parameters for better homography matrix
-        align_img, unalign_img, warped_rgb, homography = utils.align_image(hyp_img, rgb_img, args.distance, args.ch, args.image_thresh_low, args.image_thresh_high)
+        align_img, unalign_img, warped_rgb, homography = utils.align_image(hyp_img, rgb_img, args.distance, args.ch, args.image_thresh_low, args.image_thresh_high, args.gaussian_sigma)
 
         # Print the computed homography
         print("Homography : \n", homography)

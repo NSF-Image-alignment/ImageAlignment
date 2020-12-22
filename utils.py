@@ -224,7 +224,7 @@ def preprocess_hyper_and_rgb(hyper_img, rgb_image, directory_path, sheet_number)
 
 
 #This function calculates the homography matrix for the images:
-def align_image(hyp_img, rgb_img, distance=0.6, ch=-1, image_thresh_low=None, image_thresh_high=None):
+def align_image(hyp_img, rgb_img, distance=0.6, ch=-1, image_thresh_low=None, image_thresh_high=None, sigma=1.6):
     if ch==-1:
         rgb_gray = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2GRAY)            # Convert images to grayscale
     else:
@@ -237,7 +237,7 @@ def align_image(hyp_img, rgb_img, distance=0.6, ch=-1, image_thresh_low=None, im
 
     if image_thresh_low or image_thresh_high:
         _, hyp_thresh = cv2.threshold(hyp_gray, image_thresh_low, image_thresh_high, cv2.THRESH_BINARY)
-        hyp_gray += hyp_thresh
+        hyp_gray += hyp_thresh  
 
     '''
         Fine-tune params according to the image.
@@ -248,7 +248,8 @@ def align_image(hyp_img, rgb_img, distance=0.6, ch=-1, image_thresh_low=None, im
         edgeThreshold - Larger the edge threshold, more features are retained. 
                 Depends on how strong the corners and edges are.
     '''
-    sift = cv2.xfeatures2d.SIFT_create(nfeatures=0, nOctaveLayers=3, edgeThreshold=100, sigma=1.6) 
+    # sift = cv2.xfeatures2d.SIFT_create(nfeatures=0, nOctaveLayers=3, edgeThreshold=100, sigma=1.6) 
+    sift = cv2.xfeatures2d.SIFT_create(nfeatures=0, nOctaveLayers=3, edgeThreshold=100, sigma=sigma) 
     
     # finding the keypoint descriptors
     kpts1, descs1 = sift.detectAndCompute(hyp_gray, None)
@@ -274,8 +275,11 @@ def align_image(hyp_img, rgb_img, distance=0.6, ch=-1, image_thresh_low=None, im
     mask = mask.ravel().tolist()
     
     # uncomment the below section to test the keypoints. 
-    good = [g for i,g in enumerate(good) if mask[i]==1]
-    img = cv2.drawMatches(hyp_gray,kpts1,rgb_gray,kpts2,good,None)
+    # good = [g for i,g in enumerate(good) if mask[i]==1]
+    # print("Length of good: ", len(good))
+    # img = cv2.drawMatches(hyp_gray,kpts1,rgb_gray,kpts2,good,None)
+    # plt.imshow(img)
+    # plt.show()
 
     # apply the homography matrix 
     height, width = rgb_img.shape[:2]
