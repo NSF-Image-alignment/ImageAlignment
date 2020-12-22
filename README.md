@@ -17,9 +17,9 @@ mkdir output
 python main.py --hyper-img hyper_image_path --rgb-img rgb_image_path --mode 1
 ```
 
-### To increase brightness of the hyperspectral image, threshold the image and add it to the original hyperspectral image. Use parameters image_thresh_high and image_thresh_low to threshold the image. Use argument 'distance' to find good matches (default=0.6).
+### To increase brightness of the hyperspectral image, threshold the image and add it to the original hyperspectral image. Use parameters image_thresh_high and image_thresh_low to threshold the image. Use argument 'distance' to find good matches (default=0.6). Use argument 'gaussian_sigma' to modify sigma of the SIFT algorithm.
 ```bash
-python main.py --hyper-img hyper_image_path --rgb-img rgb_image_path --mode 1 --image_thresh_high 120 --image_thresh_low 50 --distance 0.7
+python main.py --hyper-img hyper_image_path --rgb-img rgb_image_path --mode 1 --image_thresh_high 120 --image_thresh_low 50 --distance 0.7 --gaussian_sigma 1.6
 ```
 
 
