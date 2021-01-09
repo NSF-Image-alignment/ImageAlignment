@@ -65,7 +65,8 @@ ImageAlignment
 
 
 ### Instructions on how to install SIFT and SURF in OpenCV (build from the source) -
-        
+Detailed installation instructions, can be found [here](https://medium.com/repro-repo/install-opencv-4-0-1-from-source-on-macos-with-anaconda-python-3-7-to-use-sift-and-surf-9d4287d6228b)
+ 
 1. Change the directory
 ```bash
 cd ~
@@ -86,7 +87,7 @@ cd build
 
 4. Build install using CMAKE and MAKE (Please note the parameter information) -
 ```bash
-export CONDA_HOME=~/anaconda3 # if user. For global, /anaconda3
+export CONDA_HOME=~/anaconda3 
 export CPLUS_INCLUDE_PATH=$CONDA_HOME/envs/cv/lib/python3.7
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
     -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
