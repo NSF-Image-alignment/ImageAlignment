@@ -249,7 +249,7 @@ def align_image(hyp_img, rgb_img, distance=0.6, ch=-1, image_thresh_low=None, im
                 Depends on how strong the corners and edges are.
     '''
     # sift = cv2.xfeatures2d.SIFT_create(nfeatures=0, nOctaveLayers=3, edgeThreshold=100, sigma=1.6) 
-    sift = cv2.xfeatures2d.SIFT_create(nfeatures=0, nOctaveLayers=3, edgeThreshold=100, sigma=sigma) 
+    sift = cv2.SIFT_create(nfeatures=0, nOctaveLayers=3, edgeThreshold=100, sigma=sigma) 
     
     # finding the keypoint descriptors
     kpts1, descs1 = sift.detectAndCompute(hyp_gray, None)
