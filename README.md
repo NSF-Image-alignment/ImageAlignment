@@ -28,8 +28,8 @@ python main.py --hyper-img hyper_image_path --rgb-img rgb_image_path --mode 1 --
 1. Modify the .csv file 
 
     Format:
-    header - rgb_images
-    filename1 - rgb_img_path
+    header - hyper_img,rgb_images
+    filename1 - hyper_img_path,rgb_img_path
     filename2
     filename3
     
@@ -38,7 +38,7 @@ python main.py --hyper-img hyper_image_path --rgb-img rgb_image_path --mode 1 --
 
 2. Run the script with the command - 
 ```bash
-python main.py --hyper-img hyperspectral_image_path --img-csv csv_rgb_image_paths --mode 2
+python main.py --img-csv csv_rgb_hyper_image_paths --mode 2
 ```
     
   
