@@ -90,12 +90,20 @@ def main(args):
                 raise Exception("Image file type not supported.")
             
             # Homography matrix
-            if args.grid_type == 1:
-                h_matrix = cfg.h_matrix_1_segment if ext=='png' else cfg.h_matrix_1
-            elif args.grid_type == 2:
-                h_matrix = cfg.h_matrix_2_segment if ext=='png' else cfg.h_matrix_2
+               
+            # Only load a standard homography matrix from the config file if one
+            #  is not provided
+            if 'h_matrix_path' not in vars() and 'h_matrix_path' not in globals():
+               
+                if args.grid_type == 1:
+                    h_matrix = cfg.h_matrix_1_segment if ext=='png' else cfg.h_matrix_1
+                elif args.grid_type == 2:
+                    h_matrix = cfg.h_matrix_2_segment if ext=='png' else cfg.h_matrix_2
+                else:
+                    raise Exception("Grid type not supported.")
+            
             else:
-                raise Exception("Grid type not supported.")
+                h_matrix = np.load(h_matrix_path)
                 
             if len(hyp_img.shape)==2:   height, width = hyp_img.shape
             else: height,width,_ = hyp_img.shape
@@ -143,7 +151,7 @@ def main(args):
         # Print the computed homography
         print("Homography : \n", homography)
         print()
-        print("Saving aligned image at:");
+        print("Saving aligned image and homography matrix at:");
         print(directory_path)
 
         # Write transformed rgb, aligned, and unaligned images to disk.
@@ -153,6 +161,10 @@ def main(args):
         cv2.imwrite(directory_path+align_name, align_img)
         unalign_name = r"_unaligned.jpg"
         cv2.imwrite(directory_path+unalign_name, unalign_img)
+          
+        # Write homography matrix
+        homography_name = r"_homography.npy"
+        np.save(directory_path+homography_name, homography)
 
 
 if __name__ == "__main__":
