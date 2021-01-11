@@ -1,5 +1,2 @@
-rgb_images
-./Alignment_testing/GWO1_I2.0_F1.9_L80_103450_0_0_0.xlsx,'./Alignment_testing/GWO1_I2.0_F1.9_L80_103450_0_0_0_rgb.jpg
-./Alignment_testing/GWO1_I2.0_F1.9_L80_103450_0_0_0.xlsx,'./Alignment_testing/GWO1_I2.0_F1.9_L80_103450_0_0_0_rgb.jpg
-./Alignment_testing/GWO1_I2.0_F1.9_L80_103450_0_0_0.xlsx,'./Alignment_testing/GWO1_I2.0_F1.9_L80_103450_0_0_0_rgb.jpg
-
+hyper_img,rgb_images
+./Alignment_testing/chromagrid_I5.0_F1.9_L100_122503_0_0_0_rgb.csv,./Alignment_testing/chromagrid_I5.0_F1.9_L100_122503_0_0_0_rgb.jpg

@@ -27,7 +27,7 @@ def get_arguments():
      """
      parser = argparse.ArgumentParser(description="DeepLab-ResNet Network")
      parser.add_argument("--img-csv", '-i', type=str, default=None, help="CSV containing paths for RGB/segmented images. For mode 1 - it should have only one image_path in the CSV file.")
-     parser.add_argument("--hyper-img", type=str, required=True, help="Chlorophyll matrix")
+     parser.add_argument("--hyper-img", type=str, required=False, help="Chlorophyll matrix")
      parser.add_argument("--rgb-img", '-r', type=str, help="Chlorophyll matrix")
      parser.add_argument("--ch", type=int, default=2, help="RGB channel to be matched with the hyperspectral. Applicable for mode 1.")
      parser.add_argument("--grid-type", type=int, choices=[1,2], default=2, help="Grid type options. 1 for 16 samples and 2 for 20 samples.")
@@ -44,44 +44,48 @@ def get_arguments():
 
 def main(args):
     # read the images
-    if not args.hyper_img:
+    if not args.hyper_img and args.mode == 1:
         print("Please provide path for the hyperspectral image for alignment.")
         exit()
-    hyper_img_path = args.hyper_img
     
-
     # read the hyperspectral image
-    if '.csv' in hyper_img_path:
-        hyp_img = genfromtxt(hyper_img_path, delimiter=',')
-        hyp_img = np.uint8(hyp_img)
-    else:
-        hyp_img = cv2.imread(hyper_img_path)
-
-    if args.rgb_img:
-        rgb_image_path = args.rgb_img
-
-    #read the image paths from csv
-    if args.img_csv or args.mode==2:
-        try:
-            data = pd.read_csv(args.img_csv)
-            rgb_images = data['rgb_images']
-        except:
-            if not args.img_csv:
-                raise Exception("Please add the rgb images in a csv, since mode is 2.")
-            else:
-                raise Exception("Error while processing the csv file.")
-
-    if args.mode == 2:
-        # read the hyperspectral image
+    if args.mode==1:
+        hyper_img_path = args.hyper_img
         if '.csv' in hyper_img_path:
             hyp_img = genfromtxt(hyper_img_path, delimiter=',')
             hyp_img = np.uint8(hyp_img)
         else:
             hyp_img = cv2.imread(hyper_img_path)
 
+    if args.rgb_img:
+        if args.mode==1:
+            rgb_image_path = args.rgb_img
+        else:
+            raise Exception("Please provide rgb images in a CSV for mode 2.")
+
+    #read the image paths from csv
+    if args.img_csv:
+        if args.mode==2:
+            data = pd.read_csv(args.img_csv)
+            hyper_images = data['hyper_img']
+            rgb_images = data['rgb_images']
+        else:
+            raise Exception("CSV format is only valid for mode 2. Please provide rgb input using rgb_img argument for mode 1.")
+
+    if args.mode == 2:
+        if not os.path.exists('temp'):
+            os.mkdir('temp')
+
         # preprocess the rgb_img based on given hyperspectral image type
         # apply h_matrix to all rgb images provided in csv file
-        for rgb_img_path in rgb_images:
+        for i, rgb_img_path in enumerate(rgb_images):
+            hyper_img_path = hyper_images[i]
+            if '.csv' in hyper_img_path:
+                hyp_img = genfromtxt(hyper_img_path, delimiter=',')
+                hyp_img = np.uint8(hyp_img)
+            else:
+                hyp_img = cv2.imread(hyper_img_path)
+
             if '.jpg' in rgb_img_path:
                 rgb_img = cv2.imread(rgb_img_path)
                 ext = 'jpg'
@@ -90,31 +94,43 @@ def main(args):
                 ext = 'png'
             else:
                 raise Exception("Image file type not supported.")
-            
-            # Homography matrix
                
             # Only load a standard homography matrix from the config file if one
             #  is not provided
-            if 'h_matrix_path' not in vars() and 'h_matrix_path' not in globals():
-               
+            if 'h_matrix_path' not in vars() and 'h_matrix_path' not in globals(): 
                 if args.grid_type == 1:
                     h_matrix = cfg.h_matrix_1_segment if ext=='png' else cfg.h_matrix_1
                 elif args.grid_type == 2:
                     h_matrix = cfg.h_matrix_2_segment if ext=='png' else cfg.h_matrix_2
                 else:
                     raise Exception("Grid type not supported.")
-            
             else:
                 h_matrix = np.load(h_matrix_path)
                 
             if len(hyp_img.shape)==2:   height, width = hyp_img.shape
             else: height,width,_ = hyp_img.shape
 
-            print(np.unique(rgb_img))
+            # print(np.unique(rgb_img))
             prep_rgb_img = utils.preprocess_rgb(rgb_img, height, width, ext)
-            print(np.unique(prep_rgb_img))
+            # print(np.unique(prep_rgb_img))
             warped_rgb = cv2.warpPerspective(np.array(prep_rgb_img), h_matrix, (width, height), flags=cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT)
-            print(np.unique(warped_rgb))
+            # print(np.unique(warped_rgb))
+
+            # Write aligned, and unaligned images to disk.
+            DIR_NAME = '.'.join(rgb_img_path.split('/')[-1].split('.')[:-1])
+            directory_path = os.path.join('temp', DIR_NAME)
+
+            if len(hyp_img.shape)==2:
+                hyp_img = hyp_img[..., np.newaxis]
+
+            align_img = cv2.addWeighted(warped_rgb[:,:,0], .3, hyp_img, .7, 1)
+            unalign_img = cv2.addWeighted(warped_rgb[:,:,0], .3, hyp_img, .7, 1)
+            
+            align_name = r"_aligned.jpg"
+            cv2.imwrite(directory_path+align_name, align_img)
+            unalign_name = r"_unaligned.jpg"
+            cv2.imwrite(directory_path+unalign_name, unalign_img)
+
             if ext=='png':
                 warped_rgb = Image.fromarray(warped_rgb)
                 warped_rgb.putpalette(list(idx_palette))
