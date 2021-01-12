@@ -106,6 +106,8 @@ def main(args):
                     raise Exception("Grid type not supported.")
             else:
                 h_matrix = np.load(h_matrix_path)
+                print('Homography matrix loaded from' + h_matrix_path + ':')
+                print(h_matrix)
                 
             if len(hyp_img.shape)==2:   height, width = hyp_img.shape
             else: height,width,_ = hyp_img.shape
