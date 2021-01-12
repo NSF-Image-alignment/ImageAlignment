@@ -99,7 +99,8 @@ def main(args):
                
             # Only load a standard homography matrix from the config file if one
             #  is not provided
-            if 'h_matrix_path' not in vars() and 'h_matrix_path' not in globals(): 
+            h_matrix_path=args.h_matrix_path
+            if 'h_matrix_path' is None: 
                 if args.grid_type == 1:
                     h_matrix = cfg.h_matrix_1_segment if ext=='png' else cfg.h_matrix_1
                 elif args.grid_type == 2:
