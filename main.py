@@ -82,6 +82,8 @@ def main(args):
         # apply h_matrix to all rgb images provided in csv file
         for i, rgb_img_path in enumerate(rgb_images):
             hyper_img_path = hyper_images[i]
+            print("Aligning " + hyper_img_path + " - AND - " + rgb_img_path)
+               
             if '.csv' in hyper_img_path:
                 hyper_img = genfromtxt(hyper_img_path, delimiter=',')
                 hyper_img = np.uint8(hyper_img)
