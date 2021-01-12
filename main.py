@@ -44,18 +44,20 @@ def get_arguments():
 
 def main(args):
     # read the images
-    if not args.hyper_img and args.mode == 1:
-        print("Please provide path for the hyperspectral image for alignment.")
-        exit()
+    # if not args.hyper_img and args.mode == 1:
+    #     print("Please provide path for the hyperspectral image for alignment.")
+    #     exit()
     
     # read the hyperspectral image
-    if args.mode==1:
-        hyper_img_path = args.hyper_img
-        if '.csv' in hyper_img_path:
-            hyp_img = genfromtxt(hyper_img_path, delimiter=',')
-            hyp_img = np.uint8(hyp_img)
-        else:
-            hyp_img = cv2.imread(hyper_img_path)
+    if not args.hyper_img:
+        raise Exception("Please provide the hyperspectral grid information (Required for resizing in mode 2 and alignment in mode 1).")
+
+    hyper_img_path = args.hyper_img
+    if '.csv' in hyper_img_path:
+        hyp_img = genfromtxt(hyper_img_path, delimiter=',')
+        hyp_img = np.uint8(hyp_img)
+    else:
+        hyp_img = cv2.imread(hyper_img_path)
 
     if args.rgb_img:
         if args.mode==1:
@@ -81,10 +83,10 @@ def main(args):
         for i, rgb_img_path in enumerate(rgb_images):
             hyper_img_path = hyper_images[i]
             if '.csv' in hyper_img_path:
-                hyp_img = genfromtxt(hyper_img_path, delimiter=',')
-                hyp_img = np.uint8(hyp_img)
+                hyper_img = genfromtxt(hyper_img_path, delimiter=',')
+                hyper_img = np.uint8(hyper_img)
             else:
-                hyp_img = cv2.imread(hyper_img_path)
+                hyper_img = cv2.imread(hyper_img_path)
 
             if '.jpg' in rgb_img_path:
                 rgb_img = cv2.imread(rgb_img_path)
@@ -122,10 +124,13 @@ def main(args):
             DIR_NAME = '.'.join(rgb_img_path.split('/')[-1].split('.')[:-1])
             directory_path = os.path.join('temp', DIR_NAME)
 
-            if len(hyp_img.shape)==2:
-                hyp_img = hyp_img[..., np.newaxis]
-            align_img = cv2.addWeighted(warped_rgb[:,:,0], .3, hyp_img, .7, 1)
-            unalign_img = cv2.addWeighted(prep_rgb_img[:,:,0], .3, hyp_img, .7, 1)
+            # resize hyperspectral image according to the grid image size.
+            hyper_img = cv2.resize(hyper_img, (width, height))
+
+            if len(hyper_img.shape)==2:
+                hyper_img = hyper_img[..., np.newaxis]
+            align_img = cv2.addWeighted(warped_rgb[:,:,0], .3, hyper_img, .7, 1)
+            unalign_img = cv2.addWeighted(prep_rgb_img[:,:,0], .3, hyper_img, .7, 1)
             
             align_name = r"_aligned.jpg"
             cv2.imwrite(directory_path+align_name, align_img)
