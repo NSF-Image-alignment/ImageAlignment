@@ -122,9 +122,8 @@ def main(args):
 
             if len(hyp_img.shape)==2:
                 hyp_img = hyp_img[..., np.newaxis]
-
             align_img = cv2.addWeighted(warped_rgb[:,:,0], .3, hyp_img, .7, 1)
-            unalign_img = cv2.addWeighted(rgb_img[:,:,0], .3, hyp_img, .7, 1)
+            unalign_img = cv2.addWeighted(prep_rgb_img[:,:,0], .3, hyp_img, .7, 1)
             
             align_name = r"_aligned.jpg"
             cv2.imwrite(directory_path+align_name, align_img)
