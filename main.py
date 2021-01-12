@@ -133,8 +133,8 @@ def main(args):
             # required to run for segmentation output.
             if len(warped_rgb.shape)==2:
                 warped_rgb = warped_rgb[..., np.newaxis]
-            if len(prep_rgb_img.shape)==2:
-                prep_rgb_img = prep_rgb_img[..., np.newaxis]
+            if len(np.array(prep_rgb_img).shape)==2:
+                prep_rgb_img = np.array(prep_rgb_img)[..., np.newaxis]
             if len(hyper_img.shape)==2:
                 hyper_img = hyper_img[..., np.newaxis]
             align_img = cv2.addWeighted(warped_rgb[:,:,0], .3, hyper_img, .7, 1)
