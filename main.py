@@ -140,17 +140,20 @@ def main(args):
                 hyper_img = hyper_img[..., np.newaxis]
             align_img = cv2.addWeighted(warped_rgb1[:,:,0], .3, hyper_img, .7, 1)
             unalign_img = cv2.addWeighted(prep_rgb_img[:,:,0], .3, hyper_img, .7, 1)
-            
-            align_name = r"_aligned.jpg"
-            cv2.imwrite(directory_path+align_name, align_img)
-            unalign_name = r"_unaligned.jpg"
-            cv2.imwrite(directory_path+unalign_name, unalign_img)
 
             if ext=='png':
+                align_name = r"_aligned.png"
+                cv2.imwrite(directory_path+align_name, align_img)
+                unalign_name = r"_unaligned.png"
+                cv2.imwrite(directory_path+unalign_name, unalign_img)
                 warped_rgb = Image.fromarray(warped_rgb)
                 warped_rgb.putpalette(list(idx_palette))
                 warped_rgb.save(rgb_img_path[:-4]+"_processed.png")
-                continue
+            else:
+                align_name = r"_aligned.jpg"
+                cv2.imwrite(directory_path+align_name, align_img)
+                unalign_name = r"_unaligned.jpg"
+                cv2.imwrite(directory_path+unalign_name, unalign_img)
             cv2.imwrite(rgb_img_path[:-4]+"_processed.jpg", warped_rgb)
 
     elif args.mode == 1:
