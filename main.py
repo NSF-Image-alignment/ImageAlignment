@@ -131,6 +131,7 @@ def main(args):
             hyper_img = cv2.resize(hyper_img, (width, height))
 
             # required to run for segmentation output.
+            warped_rgb1 = warped_rgb
             if len(warped_rgb.shape)==2:
                 warped_rgb1 = warped_rgb[..., np.newaxis]
             if len(np.array(prep_rgb_img).shape)==2:
