@@ -142,7 +142,7 @@ def main(args):
 
             warped_rgb1 = np.array(warped_rgb)
             if len(warped_rgb1.shape)==2:
-                warped_rgb1 = warped_rgb[..., np.newaxis]
+                warped_rgb1 = warped_rgb1[..., np.newaxis]
 
             align_img = cv2.addWeighted(warped_rgb1[:,:,0], .3, hyper_img, .7, 1)
             unalign_img = cv2.addWeighted(prep_rgb_img[:,:,0], .3, hyper_img, .7, 1)
