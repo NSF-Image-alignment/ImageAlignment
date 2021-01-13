@@ -129,6 +129,17 @@ def main(args):
 
             # resize hyperspectral image according to the grid image size.
             hyper_img = cv2.resize(hyper_img, (width, height))
+            
+            warped_rgb1 = warped_rgb
+            if ext=='png':  # add palette to segmentation output.
+                warped_rgb = Image.fromarray(warped_rgb)
+                warped_rgb.putpalette(list(idx_palette))
+                prep_rgb_img.putpalette(list(idx_palette))
+                prep_rgb_img.save(directory_path+"temp.png")
+                prep_rgb_img = cv2.imread(directory_path+"temp.png")
+                os.remove(directory_path+"temp.png") # remove the file from the directory
+                warped_rgb.save(rgb_img_path[:-4]+"_processed.png")
+                warped_rgb1 = cv2.imread(rgb_img_path[:-4]+"_processed.png")
 
             # required to run for segmentation output.            
             if len(np.array(prep_rgb_img).shape)==2:
@@ -136,14 +147,6 @@ def main(args):
             if len(hyper_img.shape)==2:
                 hyper_img = hyper_img[..., np.newaxis]
             
-            if ext=='png':  # add palette to segmentation output.
-                warped_rgb = Image.fromarray(warped_rgb)
-                warped_rgb.putpalette(list(idx_palette))
-
-            warped_rgb1 = np.array(warped_rgb)
-            if len(warped_rgb1.shape)==2:
-                warped_rgb1 = warped_rgb1[..., np.newaxis]
-
             align_img = cv2.addWeighted(warped_rgb1[:,:,0], .3, hyper_img, .7, 1)
             unalign_img = cv2.addWeighted(prep_rgb_img[:,:,0], .3, hyper_img, .7, 1)
 
