@@ -154,7 +154,7 @@ def main(args):
                 cv2.imwrite(directory_path+align_name, align_img)
                 unalign_name = r"_unaligned.jpg"
                 cv2.imwrite(directory_path+unalign_name, unalign_img)
-            cv2.imwrite(rgb_img_path[:-4]+"_processed.jpg", warped_rgb)
+                cv2.imwrite(rgb_img_path[:-4]+"_processed.jpg", warped_rgb)
 
     elif args.mode == 1:
 
