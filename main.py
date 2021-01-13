@@ -138,6 +138,12 @@ def main(args):
                 prep_rgb_img = np.array(prep_rgb_img)[..., np.newaxis]
             if len(hyper_img.shape)==2:
                 hyper_img = hyper_img[..., np.newaxis]
+            
+            if ext=='png':
+                warped_rgb1 = Image.fromarray(warped_rgb1)
+                warped_rgb1.putpalette(list(idx_palette))
+                warped_rgb1 = np.array(warped_rgb1)
+
             align_img = cv2.addWeighted(warped_rgb1[:,:,0], .3, hyper_img, .7, 1)
             unalign_img = cv2.addWeighted(prep_rgb_img[:,:,0], .3, hyper_img, .7, 1)
 
