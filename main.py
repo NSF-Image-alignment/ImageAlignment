@@ -140,8 +140,8 @@ def main(args):
                 warped_rgb = Image.fromarray(warped_rgb)
                 warped_rgb.putpalette(list(idx_palette))
 
-            warped_rgb1 = warped_rgb
-            if len(warped_rgb.shape)==2:
+            warped_rgb1 = np.array(warped_rgb)
+            if len(warped_rgb1.shape)==2:
                 warped_rgb1 = warped_rgb[..., np.newaxis]
 
             align_img = cv2.addWeighted(warped_rgb1[:,:,0], .3, hyper_img, .7, 1)
