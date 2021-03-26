@@ -85,7 +85,7 @@ mkdir build
 cd build
 ```
 
-4. Build install using CMAKE and MAKE (Please note the parameter information and make sure `OPENCV_EXTRA_MODULES_PATH` is set to the path of the second repository cloned in step 2) -
+4. Build install using CMAKE and MAKE (Please note the parameter information and make sure `OPENCV_EXTRA_MODULES_PATH` is set to the path of the second repository cloned in step 2)
 ```bash
 export CONDA_HOME=~/anaconda3 
 export CPLUS_INCLUDE_PATH=$CONDA_HOME/envs/cv/lib/python3.7
