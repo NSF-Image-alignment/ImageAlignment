@@ -63,6 +63,12 @@ ImageAlignment
 
 +-- main.py
 
+### Instructions on how to build OpenCV using PIP -
+
+```bash
+pip3 install opencv-python
+pip3 install opencv-contrib-python
+```
 
 ### Instructions on how to install SIFT and SURF in OpenCV (build from the source) -
 Detailed installation instructions, can be found [here](https://medium.com/repro-repo/install-opencv-4-0-1-from-source-on-macos-with-anaconda-python-3-7-to-use-sift-and-surf-9d4287d6228b)
