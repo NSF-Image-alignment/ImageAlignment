@@ -8,9 +8,10 @@ import PIL
 
 
 class_color = [[0,   0, 0], # 0-background
-                         [128, 0, 0], # 1-stem
-                         [0, 0, 128], # 2-callus
-                         [0, 128, 0], # 3-shoot
+               [128, 0, 0], # 1-stem
+               [0, 0, 128], # 2-callus
+               [0, 128, 0], # 3-shoot
+               [128, 0, 128] # 4-necrosis+contamination
                           ]
 idx_palette = np.reshape(np.asarray(class_color), (-1))
 

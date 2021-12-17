@@ -27,6 +27,7 @@ def get_arguments():
      """
      parser = argparse.ArgumentParser(description="DeepLab-ResNet Network")
      parser.add_argument("--img-csv", '-i', type=str, default=None, help="CSV containing paths for RGB/segmented images. For mode 1 - it should have only one image_path in the CSV file.")
+     parser.add_argument("--test_alignment", type=str, default=False, required=False, help="Produce before/after images showing alignment results for each hyperspectral image? Requires slow preprocessing of each (hypercube to csv).")
      parser.add_argument("--hyper-img", type=str, required=False, help="Chlorophyll matrix")
      parser.add_argument("--rgb-img", '-r', type=str, help="Chlorophyll matrix")
      parser.add_argument("--ch", type=int, default=2, help="RGB channel to be matched with the hyperspectral. Applicable for mode 1.")
@@ -81,14 +82,16 @@ def main(args):
         # preprocess the rgb_img based on given hyperspectral image type
         # apply h_matrix to all rgb images provided in csv file
         for i, rgb_img_path in enumerate(rgb_images):
-            hyper_img_path = hyper_images[i]
-            print("Aligning " + hyper_img_path + " - AND - " + rgb_img_path)
+            
+            if args.test_alignment==True:
+                hyper_img_path = hyper_images[i]
+                print("Aligning " + hyper_img_path + " - AND - " + rgb_img_path)
                
-            if '.csv' in hyper_img_path:
-                hyper_img = genfromtxt(hyper_img_path, delimiter=',')
-                hyper_img = np.uint8(hyper_img)
-            else:
-                hyper_img = cv2.imread(hyper_img_path)
+                if '.csv' in hyper_img_path:
+                    hyper_img = genfromtxt(hyper_img_path, delimiter=',')
+                    hyper_img = np.uint8(hyper_img)
+                else:
+                    hyper_img = cv2.imread(hyper_img_path)
 
             if '.jpg' in rgb_img_path:
                 rgb_img = cv2.imread(rgb_img_path)
@@ -127,8 +130,9 @@ def main(args):
             DIR_NAME = '.'.join(rgb_img_path.split('/')[-1].split('.')[:-1])
             directory_path = os.path.join('temp', DIR_NAME)
 
-            # resize hyperspectral image according to the grid image size.
-            hyper_img = cv2.resize(hyper_img, (width, height))
+            if args.test_alignment==True:
+                # resize hyperspectral image according to the grid image size.
+                hyper_img = cv2.resize(hyper_img, (width, height))
             
             warped_rgb1 = warped_rgb
             if ext=='png':  # add palette to segmentation output.
@@ -141,26 +145,29 @@ def main(args):
                 warped_rgb.save(rgb_img_path[:-4]+"_processed.png")
                 warped_rgb1 = cv2.imread(rgb_img_path[:-4]+"_processed.png")
 
+            if args.test_alignment==True:
             # required to run for segmentation output.            
-            if len(np.array(prep_rgb_img).shape)==2:
-                prep_rgb_img = np.array(prep_rgb_img)[..., np.newaxis]
-            if len(hyper_img.shape)==2:
-                hyper_img = hyper_img[..., np.newaxis]
+                if len(np.array(prep_rgb_img).shape)==2:
+                    prep_rgb_img = np.array(prep_rgb_img)[..., np.newaxis]
+                if len(hyper_img.shape)==2:
+                    hyper_img = hyper_img[..., np.newaxis]
             
-            align_img = cv2.addWeighted(warped_rgb1[:,:,0], .3, hyper_img, .7, 1)
-            unalign_img = cv2.addWeighted(prep_rgb_img[:,:,0], .3, hyper_img, .7, 1)
+                align_img = cv2.addWeighted(warped_rgb1[:,:,0], .3, hyper_img, .7, 1)
+                unalign_img = cv2.addWeighted(prep_rgb_img[:,:,0], .3, hyper_img, .7, 1)
 
             if ext=='png':
-                align_name = r"_aligned.png"
-                cv2.imwrite(directory_path+align_name, align_img)
-                unalign_name = r"_unaligned.png"
-                cv2.imwrite(directory_path+unalign_name, unalign_img)
+                if args.test_alignment==True:
+                    align_name = r"_aligned.png"
+                    cv2.imwrite(directory_path+align_name, align_img)
+                    unalign_name = r"_unaligned.png"
+                    cv2.imwrite(directory_path+unalign_name, unalign_img)
                 warped_rgb.save(rgb_img_path[:-4]+"_processed.png")
             else:
-                align_name = r"_aligned.jpg"
-                cv2.imwrite(directory_path+align_name, align_img)
-                unalign_name = r"_unaligned.jpg"
-                cv2.imwrite(directory_path+unalign_name, unalign_img)
+                if args.test_alignment==True:
+                    align_name = r"_aligned.jpg"
+                    cv2.imwrite(directory_path+align_name, align_img)
+                    unalign_name = r"_unaligned.jpg"
+                    cv2.imwrite(directory_path+unalign_name, unalign_img)
                 cv2.imwrite(rgb_img_path[:-4]+"_processed.jpg", warped_rgb)
 
     elif args.mode == 1:
