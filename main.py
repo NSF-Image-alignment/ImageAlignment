@@ -18,7 +18,9 @@ from config import config as cfg
 from skimage.io import imread
 import argparse
 from PIL import Image
+print(cfg.class_color)
 idx_palette = np.reshape(np.asarray(cfg.class_color), (-1))
+print(idx_palette)
 from numpy import genfromtxt
 
 def get_arguments():
@@ -137,6 +139,7 @@ def main(args):
             warped_rgb1 = warped_rgb
             if ext=='png':  # add palette to segmentation output.
                 warped_rgb = Image.fromarray(warped_rgb)
+                # Experiencing problems with the color changing even though yellow is in config file
                 warped_rgb.putpalette(list(idx_palette))
                 prep_rgb_img.putpalette(list(idx_palette))
                 prep_rgb_img.save(directory_path+"temp.png")

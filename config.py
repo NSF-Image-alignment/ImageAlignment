@@ -49,4 +49,5 @@ config.class_color = [[0,   0, 0], # 0-background
                          [128, 0, 0], # 1-stem
                          [0, 0, 128], # 2-callus
                          [0, 128, 0], # 3-shoot
+                         [128, 128, 0] #4-contamination/necrosis
                           ]
