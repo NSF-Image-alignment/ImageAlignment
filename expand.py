@@ -11,7 +11,8 @@ class_color = [[0,   0, 0], # 0-background
                [128, 0, 0], # 1-stem
                [0, 0, 128], # 2-callus
                [0, 128, 0], # 3-shoot
-               [128, 0, 128] # 4-necrosis+contamination
+               [255, 192, 203], # 4-root
+               [254, 255, 25] # 5-necrosis+contamination
                           ]
 idx_palette = np.reshape(np.asarray(class_color), (-1))
 
@@ -32,7 +33,7 @@ def expand2square(pil_img, background_color):
 def pad_image(file_path):
     if '.png' in file_path:
         file_in = imread(file_path, pilmode='P')
-        file_in = Image.fromarray(file_in)
+        file_in = Image.fromarray(file_in).convert("P")
     if '.jpg' in file_path:
         x = "RGB"
         file_in = Image.open(file_path).convert(x)
@@ -51,7 +52,9 @@ def pad_image(file_path):
     print('Writing file ' + str(img_out_path))
     expanded_img = expanded_img.rotate(180, expand=True, resample=PIL.Image.NEAREST)
     ########## WE ARE ROTATING IMAGES 180deg here because NN wants label on bottom and alignment homography matrix currently used wants them on top
-    if '.png' in file_path:
+    if file_path.endswith((".png")):
+        print("put palette")
+        #expanded_img=expanded_img.convert("P")
         expanded_img.putpalette(list(idx_palette))
     
     expanded_img.save(img_out_path)
