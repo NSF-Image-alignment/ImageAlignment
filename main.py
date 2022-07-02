@@ -115,7 +115,7 @@ def main(args):
                 else:
                     raise Exception("Grid type not supported.")
             else:
-                h_matrix = np.load(h_matrix_path)
+                h_matrix = np.load(h_matrix_path, allow_pickle=True)
                 print('Homography matrix loaded from' + h_matrix_path + ':')
                 print(h_matrix)
                 
